@@ -1,18 +1,21 @@
 package liguetaxi
 
-import "net/http"
+import (
+	"net/http"
+	"net/url"
+)
 
 // Client encapsulates the requests to the
 // Ligue Taxi endpoints.
 type Client struct {
 	// host is the Ligue Taxi URL Host.
-	host string
+	host *url.URL
 	// client is the http client.
 	client *http.Client
 }
 
 // New returns a Client for requests Ligue Taxi API.
-func New(host, token string, c *http.Client) *Client {
+func New(host *url.URL, token string, c *http.Client) *Client {
 	if c == nil {
 		c = &http.Client{}
 	}

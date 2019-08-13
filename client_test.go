@@ -2,19 +2,20 @@ package liguetaxi
 
 import (
 	"net/http"
+	"net/url"
 	"reflect"
 	"testing"
 )
 
 func TestNew(t *testing.T) {
 	testCases := []struct{
-		host	string
+		host	*url.URL
 		token	string
 		client	*http.Client
 	}{
-		{"/", "abc", nil},
-		{"/", "abc", &http.Client{}},
-		{"/", "abc", &http.Client{
+		{&url.URL{}, "abc", nil},
+		{&url.URL{}, "abc", &http.Client{}},
+		{&url.URL{}, "abc", &http.Client{
 			Transport: testRoundTripper(func(r *http.Request) (*http.Response, error) {
 				return nil, nil
 			}),
