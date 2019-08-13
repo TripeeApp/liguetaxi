@@ -1,6 +1,7 @@
 package liguetaxi
 
 import (
+	"errors"
 	"net/http/httptest"
 	"net/http"
 	"testing"
@@ -44,3 +45,15 @@ func TestRoundTrip(t *testing.T) {
 	}
 }
 
+func TestRoundTripError(t *testing.T) {
+	rt := testRoundTripper(func(r *http.Request) (*http.Response, error) {
+		return nil, errors.New("Error")
+	})
+
+	tr := &Transport{"abc", rt}
+
+	_, err := tr.RoundTrip(httptest.NewRequest(http.MethodGet, "/", nil))
+	if err == nil {
+		t.Error("got error nil; want not nil")
+	}
+}
