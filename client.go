@@ -11,14 +11,14 @@ type Client struct {
 	client *http.Client
 }
 
+// New returns a Client for requests Ligue Taxi API.
 func New(host, token string, c *http.Client) *Client {
-	return &Client{
-		host,
-		&http.Client{
-			Transport: &Transport{
-				token,
-				http.DefaultClient.Transport,
-			},
-		},
+	if c == nil {
+		c = &http.Client{}
 	}
+	c.Transport = &Transport{
+		token,
+		c.Transport,
+	}
+	return &Client{host, c}
 }
