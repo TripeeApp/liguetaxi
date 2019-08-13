@@ -1,6 +1,7 @@
 package liguetaxi
 
 import (
+	"context"
 	"net/http"
 	"net/url"
 )
@@ -24,4 +25,12 @@ func New(host *url.URL, token string, c *http.Client) *Client {
 		c.Transport,
 	}
 	return &Client{host, c}
+}
+
+// Request created an API request. A relative path can be providaded
+// in which case it is resolved relative to the host of the Client.
+func (c *Client) Request(ctx context.Context, method, path string, body interface{}) (*http.Response, error) {
+	u, _ := c.host.Parse(path)
+	req, _ := http.NewRequest(method, u.String(), nil)
+	return c.client.Do(req)
 }
