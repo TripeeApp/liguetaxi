@@ -9,9 +9,9 @@ import (
 // the authorization header for every request to
 // Ligue Taxi player.
 type Transport struct {
-	// token is the string to be injected to the
+	// Token is the string to be injected to the
 	// outgoing request header
-	token string
+	Token string
 
 	// Base is the base RoundTripper to make HTTP request.
 	Base http.RoundTripper
@@ -24,7 +24,7 @@ func (t *Transport) RoundTrip(r *http.Request) (*http.Response, error) {
 	// https://golang.org/pkg/net/http/#RoundTripper
 	req := cloneReq(r)
 	// Injects the Authorization Header
-	req.Header.Set("Authorization", fmt.Sprintf("Basic %s", t.token))
+	req.Header.Set("Authorization", fmt.Sprintf("Basic %s", t.Token))
 
 	return t.Base.RoundTrip(req)
 }
