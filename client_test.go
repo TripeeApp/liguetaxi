@@ -61,18 +61,6 @@ func TestRequest(t *testing.T) {
 			http.MethodGet,
 			nil,
 			newMockServer(func(w http.ResponseWriter, r *http.Request) {
-				if r.Method != http.MethodGet {
-					t.Errorf("go Request.Method %s; want %s.", r.Method, http.MethodGet)
-				}
-
-				if got := r.URL.Path; got != "foo/" {
-					t.Errorf("got Request.URL: %s; want foo/.", got)
-				}
-
-				if r.Body != nil {
-					t.Errorf("got Request.Body: %+v, want nil.", r.Body)
-				}
-
 				w.WriteHeader(http.StatusOK)
 			}),
 			&http.Response{StatusCode: http.StatusOK},
@@ -95,3 +83,4 @@ func TestRequest(t *testing.T) {
 		tc.server.Close()
 	}
 }
+
