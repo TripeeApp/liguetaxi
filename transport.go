@@ -26,7 +26,16 @@ func (t *Transport) RoundTrip(r *http.Request) (*http.Response, error) {
 	// Injects the Authorization Header
 	req.Header.Set("Authorization", fmt.Sprintf("Basic %s", t.Token))
 
-	return t.Base.RoundTrip(req)
+	return t.base().RoundTrip(req)
+}
+
+// base returns nil if Base RoundTripper is nil
+func (t *Transport) base() http.RoundTripper {
+	if t.Base != nil {
+		return t.Base
+	}
+
+	return http.DefaultTransport
 }
 
 // cloneReq returns a clone of the *http.Request.
