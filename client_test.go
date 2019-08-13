@@ -13,6 +13,12 @@ func TestNew(t *testing.T) {
 		client *http.Client
 	}{
 		{"/", "abc", nil},
+		{"/", "abc", &http.Client{}},
+		{"/", "abc", &http.Client{
+			Transport: testRoundTripper(func(r *http.Request) (*http.Response, error) {
+				return nil, nil
+			}),
+		}},
 	}
 
 	for _, tc := range testCases {
