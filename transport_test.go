@@ -26,7 +26,8 @@ func TestRoundTrip(t *testing.T) {
 
 	tr := &Transport{"abc", rt}
 
-	req := httptest.NewRequest(http.MethodGet, "", nil)
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	req.Header.Set("Content-Type", "application/json")
 
 	tr.RoundTrip(req)
 
@@ -37,4 +38,9 @@ func TestRoundTrip(t *testing.T) {
 	if auth := reqSent.Header.Get("Authorization"); auth != expectedAuth {
 		t.Errorf("got Authorization Header: %s; want %s", auth, expectedAuth)
 	}
+
+	if ct := reqSent.Header.Get("Content-Type"); ct != "application/json" {
+		t.Errorf("got Authorization Header: %s; want application/json", ct)
+	}
 }
+
