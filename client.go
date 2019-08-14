@@ -9,6 +9,11 @@ import (
 	"net/url"
 )
 
+// requester is theinterface that performs a request to the server
+type requester interface {
+	Request(ctx context.Context, string, method, path string, body interface{}) (*http.Response, error)
+}
+
 // Client encapsulates the requests to the
 // Ligue Taxi endpoints.
 type Client struct {
