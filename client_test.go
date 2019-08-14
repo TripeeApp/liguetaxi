@@ -2,6 +2,8 @@ package liguetaxi
 
 import (
 	"context"
+	"bytes"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -57,10 +59,68 @@ func TestRequest(t *testing.T) {
 	}{
 		{
 			context.Background(),
+			"/",
+			http.MethodGet,
+			nil,
+			newMockServer(func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusOK)
+			}),
+			&http.Response{StatusCode: http.StatusOK},
+		},
+		{
+			context.Background(),
+			"",
+			http.MethodGet,
+			nil,
+			newMockServer(func(w http.ResponseWriter, r *http.Request) {
+				if r.Method != http.MethodGet {
+					t.Errorf("go Request.Method %s; want %s.", r.Method, http.MethodGet)
+				}
+				w.WriteHeader(http.StatusOK)
+			}),
+			&http.Response{StatusCode: http.StatusOK},
+		},
+		{
+			context.Background(),
 			"foo/",
 			http.MethodGet,
 			nil,
 			newMockServer(func(w http.ResponseWriter, r *http.Request) {
+				if got := r.URL.Path; got != "/foo/" {
+					t.Errorf("got Request.URL: %s; want foo/.", got)
+				}
+				w.WriteHeader(http.StatusOK)
+			}),
+			&http.Response{StatusCode: http.StatusOK},
+		},
+		{
+			context.Background(),
+			"",
+			http.MethodGet,
+			nil,
+			newMockServer(func(w http.ResponseWriter, r *http.Request) {
+				if r.Body != http.NoBody {
+					t.Errorf("got Request.Body: %+v, want empty.", r.Body)
+				}
+				w.WriteHeader(http.StatusOK)
+			}),
+			&http.Response{StatusCode: http.StatusOK},
+		},
+		{
+			context.Background(),
+			"",
+			http.MethodPost,
+			struct{Name string `json:"name"`}{"Testing"},
+			newMockServer(func(w http.ResponseWriter, r *http.Request) {
+				if r.Body == http.NoBody {
+					t.Error("got Request.Body empty, want not empty.")
+				}
+
+				got, _ := ioutil.ReadAll(r.Body)
+
+				if want := []byte(`{"name":"Testing"}`); !bytes.Contains(got, want) {
+					t.Errorf("got body: %s, want %s.", got, want)
+				}
 				w.WriteHeader(http.StatusOK)
 			}),
 			&http.Response{StatusCode: http.StatusOK},
@@ -83,4 +143,3 @@ func TestRequest(t *testing.T) {
 		tc.server.Close()
 	}
 }
-
