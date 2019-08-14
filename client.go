@@ -33,12 +33,23 @@ func New(host *url.URL, token string, c *http.Client) *Client {
 // Request created an API request. A relative path can be providaded
 // in which case it is resolved relative to the host of the Client.
 func (c *Client) Request(ctx context.Context, method, path string, body interface{}) (*http.Response, error) {
-	u, _ := c.host.Parse(path)
+	u, err := c.host.Parse(path)
+	if err != nil {
+		return nil, err
+	}
+
 	var b io.ReadWriter
 	if body != nil {
 		b = new(bytes.Buffer)
-		json.NewEncoder(b).Encode(body)
+		if err := json.NewEncoder(b).Encode(body); err != nil {
+			return nil, err
+		}
 	}
-	req, _ := http.NewRequest(method, u.String(), b)
+
+	req, err := http.NewRequest(method, u.String(), b)
+	if err != nil {
+		return nil, err
+	}
+
 	return c.client.Do(req)
 }
