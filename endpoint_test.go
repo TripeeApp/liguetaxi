@@ -8,7 +8,7 @@ import (
 func TestEndpointString(t *testing.T) {
 	testCases := []struct{
 		ctx	 context.Context
-		endpoint Endpoint
+		endpoint endpoint
 		want	 string
 	}{
 		{
@@ -18,13 +18,13 @@ func TestEndpointString(t *testing.T) {
 		},
 		{
 
-			context.WithValue(context.Background(), ResType, "json"),
+			context.WithValue(context.Background(), ResType, Json),
 			Endpoint("/test2"),
 			"/test2/json",
 		},
 		{
 
-			context.WithValue(context.Background(), ResType, "xml"),
+			context.WithValue(context.Background(), ResType, Xml),
 			Endpoint("/test3"),
 			"/test3/xml",
 		},
