@@ -51,5 +51,7 @@ func (c *Client) Request(ctx context.Context, method, path string, body interfac
 		return nil, err
 	}
 
+	req = req.WithContext(ctx)
+
 	return c.client.Do(req)
 }
