@@ -143,3 +143,37 @@ func TestRequest(t *testing.T) {
 		tc.server.Close()
 	}
 }
+
+func TestRequestError(t *testing.T) {
+	testCases := []struct{
+		ctx context.Context
+		path	string
+		method	string
+		body	interface{}
+		server	*httptest.Server
+		want	*http.Response
+	}{
+		{
+			context.Background(),
+			":",
+			http.MethodGet,
+			nil,
+			newMockServer(func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusOK)
+			}),
+			&http.Response{StatusCode: http.StatusOK},
+		},
+	}
+
+	for _, tc := range testCases {
+		u, _ := url.Parse(tc.server.URL)
+		c := New(u, "abc", nil)
+
+		_, err := c.Request(tc.ctx, tc.method, tc.path, tc.body)
+		if err == nil {
+			t.Errorf("got error nil; want not nil.")
+		}
+
+		tc.server.Close()
+	}
+}
