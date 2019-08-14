@@ -13,20 +13,26 @@ func TestEndpointString(t *testing.T) {
 	}{
 		{
 			context.Background(),
-			Endpoint("/test"),
+			endpoint("/test"),
 			"/test/json",
 		},
 		{
 
 			context.WithValue(context.Background(), ResType, Json),
-			Endpoint("/test2"),
+			endpoint("/test2"),
 			"/test2/json",
 		},
 		{
 
 			context.WithValue(context.Background(), ResType, Xml),
-			Endpoint("/test3"),
+			endpoint("/test3"),
 			"/test3/xml",
+		},
+		{
+
+			context.WithValue(context.Background(), ResType, ""),
+			endpoint("/test4"),
+			"/test4/json",
 		},
 	}
 
