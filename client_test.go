@@ -151,17 +151,34 @@ func TestRequestError(t *testing.T) {
 		method	string
 		body	interface{}
 		server	*httptest.Server
-		want	*http.Response
 	}{
 		{
 			context.Background(),
 			":",
 			http.MethodGet,
 			nil,
-			newMockServer(func(w http.ResponseWriter, r *http.Request) {
-				w.WriteHeader(http.StatusOK)
-			}),
-			&http.Response{StatusCode: http.StatusOK},
+			newMockServer(func(w http.ResponseWriter, r *http.Request) {}),
+		},
+		{
+			context.Background(),
+			"",
+			http.MethodGet,
+			make(chan int),
+			newMockServer(func(w http.ResponseWriter, r *http.Request) {}),
+		},
+		{
+			context.Background(),
+			"",
+			",",
+			nil,
+			newMockServer(func(w http.ResponseWriter, r *http.Request) {}),
+		},
+		{
+			context.Background(),
+			"",
+			http.MethodPost,
+			nil,
+			httptest.NewUnstartedServer(nil),
 		},
 	}
 
