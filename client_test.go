@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"reflect"
 	"testing"
+	"time"
 )
 
 func TestNew(t *testing.T) {
@@ -50,7 +51,6 @@ func newMockServer(handler func(w http.ResponseWriter, r *http.Request)) *httpte
 
 func TestRequest(t *testing.T) {
 	testCases := []struct{
-		ctx context.Context
 		path	string
 		method	string
 		body	interface{}
@@ -58,7 +58,6 @@ func TestRequest(t *testing.T) {
 		want	*http.Response
 	}{
 		{
-			context.Background(),
 			"/",
 			http.MethodGet,
 			nil,
@@ -68,7 +67,6 @@ func TestRequest(t *testing.T) {
 			&http.Response{StatusCode: http.StatusOK},
 		},
 		{
-			context.Background(),
 			"",
 			http.MethodGet,
 			nil,
@@ -81,7 +79,6 @@ func TestRequest(t *testing.T) {
 			&http.Response{StatusCode: http.StatusOK},
 		},
 		{
-			context.Background(),
 			"foo/",
 			http.MethodGet,
 			nil,
@@ -94,7 +91,6 @@ func TestRequest(t *testing.T) {
 			&http.Response{StatusCode: http.StatusOK},
 		},
 		{
-			context.Background(),
 			"",
 			http.MethodGet,
 			nil,
@@ -107,7 +103,6 @@ func TestRequest(t *testing.T) {
 			&http.Response{StatusCode: http.StatusOK},
 		},
 		{
-			context.Background(),
 			"",
 			http.MethodPost,
 			struct{Name string `json:"name"`}{"Testing"},
@@ -131,7 +126,7 @@ func TestRequest(t *testing.T) {
 		u, _ := url.Parse(tc.server.URL)
 		c := New(u, "abc", nil)
 
-		res, err := c.Request(tc.ctx, tc.method, tc.path, tc.body)
+		res, err := c.Request(context.Background(), tc.method, tc.path, tc.body)
 		if err != nil {
 			t.Fatalf("got error %s; want nil.", err.Error())
 		}
@@ -146,35 +141,30 @@ func TestRequest(t *testing.T) {
 
 func TestRequestError(t *testing.T) {
 	testCases := []struct{
-		ctx context.Context
 		path	string
 		method	string
 		body	interface{}
 		server	*httptest.Server
 	}{
 		{
-			context.Background(),
 			":",
 			http.MethodGet,
 			nil,
-			newMockServer(func(w http.ResponseWriter, r *http.Request) {}),
+			newMockServer(nil),
 		},
 		{
-			context.Background(),
 			"",
 			http.MethodGet,
 			make(chan int),
-			newMockServer(func(w http.ResponseWriter, r *http.Request) {}),
+			newMockServer(nil),
 		},
 		{
-			context.Background(),
 			"",
 			",",
 			nil,
-			newMockServer(func(w http.ResponseWriter, r *http.Request) {}),
+			newMockServer(nil),
 		},
 		{
-			context.Background(),
 			"",
 			http.MethodPost,
 			nil,
@@ -186,11 +176,36 @@ func TestRequestError(t *testing.T) {
 		u, _ := url.Parse(tc.server.URL)
 		c := New(u, "abc", nil)
 
-		_, err := c.Request(tc.ctx, tc.method, tc.path, tc.body)
+		_, err := c.Request(context.Background(), tc.method, tc.path, tc.body)
 		if err == nil {
 			t.Errorf("got error nil; want not nil.")
 		}
 
 		tc.server.Close()
+	}
+}
+
+func TestRequestWithContext(t *testing.T) {
+	s := newMockServer(func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
+		select {
+		case <- time.After(1 * time.Second):
+			t.Errorf("Expected request to be canceled by context")
+		case <- ctx.Done():
+			return
+		}
+	})
+	defer s.Close()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	u, _ := url.Parse(s.URL)
+	c := New(u, "abc", nil)
+
+	_, err := c.Request(ctx, http.MethodGet, "", nil)
+	if err == nil {
+		t.Errorf("got error nil; want not nil")
 	}
 }
