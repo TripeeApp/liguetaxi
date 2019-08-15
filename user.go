@@ -213,7 +213,9 @@ func (us *UserService) ReadClassifier(ctx context.Context, field string, value s
 func (us *UserService) CreateClassifier(ctx context.Context, c *Classifier) (ClassifierOperationResponse, error) {
 	var co ClassifierOperationResponse
 
-	us.client.Request(ctx, http.MethodPost, createClassifierEndpoint, c, &co)
+	if err := us.client.Request(ctx, http.MethodPost, createClassifierEndpoint, c, &co); err != nil {
+		return co, err
+	}
 
 	return co, nil
 }
