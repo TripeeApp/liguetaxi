@@ -1,45 +1,72 @@
-**Edit a file, create a new file, and clone from Bitbucket in under 2 minutes**
+# liguetaxi #
 
-When you're done, you can delete the content in this README and update the file with details for others getting started with your repository.
+liguetaxi is a Go client library for acessing the [Ligue Taxi API][]
 
-*We recommend that you open this README in another tab as you perform the tasks below. You can [watch our video](https://youtu.be/0ocf7u76WSo) for a full demo of all the steps in this tutorial. Open the video in a new tab to avoid leaving Bitbucket.*
+## Usage ##
 
----
+```go
+import "bitbicket.org/mobilitee/liguetaxi"
+```
 
-## Edit a file
+Construct a new LigueTaxi client, then use the various services on the client to
+access differente parts of the LigueTaxi API. For example:
 
-You’ll start by editing this README file to learn how to edit a file in Bitbucket.
+```go
+host, _ := url.Parse("https://portal.taxidigital.net/suporte/php/API_TD/api/")
 
-1. Click **Source** on the left side.
-2. Click the README.md link from the list of files.
-3. Click the **Edit** button.
-4. Delete the following text: *Delete this line to make a change to the README from Bitbucket.*
-5. After making your change, click **Commit** and then **Commit** again in the dialog. The commit page will open and you’ll see the change you just made.
-6. Go back to the **Source** page.
+ligtaxi := liguetaxi.New(host, "token", nil)
 
----
+// Read user info.
+user, _ := ligtaxi.User.Read(context.Background(), "00115422321", "Jo�o da Silva")
 
-## Create a file
+```
 
-Next, you’ll add a new file to this repository.
+The services of a client divide the API into logical chunks and correspond to
+the struct of the [Ligue Taxi API][] documentation.
 
-1. Click the **New file** button at the top of the **Source** page.
-2. Give the file a filename of **contributors.txt**.
-3. Enter your name in the empty file space.
-4. Click **Commit** and then **Commit** again in the dialog.
-5. Go back to the **Source** page.
+For more sample code snippets, head over to the `_test.go` files.
 
-Before you move on, go ahead and explore the repository. You've already seen the **Source** page, but check out the **Commits**, **Branches**, and **Settings** pages.
+### Authentication ###
 
----
+The liguetaxi librarty handles the Authorization header with a custom Transport.
 
-## Clone a repository
+### Creating and Updating Resources ###
 
-Use these steps to clone from SourceTree, our client for using the repository command-line free. Cloning allows you to work on your files locally. If you don't yet have SourceTree, [download and install first](https://www.sourcetreeapp.com/). If you prefer to clone from the command line, see [Clone a repository](https://confluence.atlassian.com/x/4whODQ).
+Resources that can be created or updated in the [Ligue Taxi API][] are exposed
+by the liguetaxi library through structs.
 
-1. You’ll see the clone button under the **Source** heading. Click that button.
-2. Now click **Check out in SourceTree**. You may need to create a SourceTree account or log in.
-3. When you see the **Clone New** dialog in SourceTree, update the destination path and name if you’d like to and then click **Clone**.
-4. Open the directory you just created to see your repository’s files.
+```go
+newUser := &liguetaxi.User{
+        Name: "Jo�o da Silva",
+        Email: "test@gmail.com",
+        Phone: "11986548744",
+        Password: "1234321",
+        Classifier1: "Classifier Field",
+}
+ligtaxi.User.Create(context.Background(), newUser)
+```
 
-Now that you're more familiar with your Bitbucket repository, go ahead and add a new file locally. You can [push your change back to Bitbucket with SourceTree](https://confluence.atlassian.com/x/iqyBMg), or you can [add, commit,](https://confluence.atlassian.com/x/8QhODQ) and [push from the command line](https://confluence.atlassian.com/x/NQ0zDQ).
+## Roadmap ##
+
+This library is being initally developed for an internal application at
+Mobilitee, so API methods will likely be implemented in the order they are
+needed by the application.
+
+## Versioning ##
+
+liguetax folows [semver](https://semver.org/) as closely as we
+can for tagging releases of the package. Because liguetaxi is a client
+library for the [Ligue Taxi API][], which itself can change behaviour,
+we've adopted the following policy:
+
+* Increment the **major version** with any incompatible change to the
+API functionality.
+* Increment the **minor version** with any backward-compatible changes to the
+API functionality.
+* Increment the **patch version** with any backwards-compatible bug fixes.
+
+### TODO ###
+- Implement the ride methods
+- Implement XML requests
+
+[Ligue Taxi API]: https://portal.taxidigital.net/suporte/php/API_TD/
