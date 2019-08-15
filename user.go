@@ -168,8 +168,12 @@ func (us *UserService) Create(ctx context.Context, u *User) (OperationResponse, 
 	return op, nil
 }
 
-func (us *UserService) Update(ctx context.Context, u *User) (*OperationResponse, error) {
-	return nil, nil
+func (us *UserService) Update(ctx context.Context, u *User) (OperationResponse, error) {
+	var op OperationResponse
+
+	us.client.Request(ctx, http.MethodPost, updateUserEndpoint, u, &op)
+
+	return op, nil
 }
 
 func (us *UserService) UpdateStatus(ctx context.Context, s *UserStatus) (*OperationResponse, error) {
