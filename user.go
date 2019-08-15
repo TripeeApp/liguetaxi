@@ -1,6 +1,10 @@
 package liguetaxi
 
-import "context"
+import (
+	"context"
+	"encoding/json"
+	"net/http"
+)
 
 // reqStatus is the request status.
 // Success = 1
@@ -161,8 +165,13 @@ type UserService struct {
 }
 
 // Read returns User infos.
-func (us *UserService) Read(ctx context.Context, id, name string) (*UserResponse, error) {
-	return nil, nil
+func (us *UserService) Read(ctx context.Context, id, name string) (UserResponse, error) {
+	resType := readUserEndpoint.ContextType(ctx)
+	res, _ := us.client.Request(ctx, http.MethodPost, readUserEndpoint.String(resType), userFilter{id, name})
+
+	var u UserResponse
+	json.NewDecoder(res.Body).Decode(&u)
+	return u, nil
 }
 
 func (us *UserService) Create(ctx context.Context, u *User) (*OperationResponse, error) {
