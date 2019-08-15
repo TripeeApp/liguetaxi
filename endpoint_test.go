@@ -6,11 +6,16 @@ import (
 )
 
 func TestEndpointContextType(t *testing.T) {
-	tetCases := []struct{
+	testCases := []struct{
 		ctx	 context.Context
 		endpoint endpoint
 		want	 string
 	}{
+		{
+			nil,
+			endpoint("/test"),
+			Json,
+		},
 		{
 			context.Background(),
 			endpoint("/test"),
@@ -25,7 +30,7 @@ func TestEndpointContextType(t *testing.T) {
 			context.WithValue(context.Background(), ResType, Xml),
 			endpoint("/test"),
 			Xml,
-		}
+		},
 	}
 
 
