@@ -5,7 +5,7 @@ liguetaxi is a Go client library for acessing the [Ligue Taxi API][]
 ## Usage ##
 
 ```go
-import "bitbicket.org/mobilitee/liguetaxi"
+import "bitbucket.org/mobilitee/liguetaxi"
 ```
 
 Construct a new LigueTaxi client, then use the various services on the client to
