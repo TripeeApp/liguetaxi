@@ -241,6 +241,14 @@ func TestUserError(t *testing.T) {
 			},
 			errors.New("Error"),
 		},
+		{
+			"CreateClassifier()",
+			func(req requester) error {
+				_, err := (&UserService{req}).CreateClassifier(context.Background(), nil)
+				return err
+			},
+			errors.New("Error"),
+		},
 	}
 
 	for _, tc := range testCases {
