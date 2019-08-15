@@ -3,6 +3,7 @@ package liguetaxi
 import (
 	"context"
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -11,6 +12,20 @@ import (
 	"testing"
 	"time"
 )
+
+func TestError(t *testing.T) {
+	var (
+		status = http.StatusBadRequest
+		body = []byte("Invalid Request")
+		msg = http.StatusText(http.StatusBadRequest)
+	)
+
+	e := &Error{status, body, msg}
+
+	if want := fmt.Sprintf(errFmt, msg, status, body); e.Error() != want {
+		t.Errorf("got message from Error.Error(): %s; want %s.", e.Error(), want)
+	}
+}
 
 func TestNew(t *testing.T) {
 	testCases := []struct{
