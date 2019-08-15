@@ -2,30 +2,47 @@ package liguetaxi
 
 import "context"
 
-// ReqStatus is the request status.
+// reqStatus is the request status.
 // Success = 1
 // Fail = 0
-type ReqStatus int
+type reqStatus int
 
-// UserStatus is the user status.
+// userStatus is the user status.
 // Active - 1
 // Inactive - 0
-type UserStatus int
+type userStatus int
 
-func (us *UserStatus) UnmarshalJSON(b []byte) error {
-	*us = UserStatusActive
+// UnmarshalJSON implements the Unmarshaler interface for
+// userStatus type
+func (us *userStatus) UnmarshalJSON(b []byte) error {
+	if b := string(b); b == `24` {
+		*us = UserStatusActive
+	}
 	return nil
 }
 
-// Request Status
+// emptObjToStr is the field that should return an string
+// but returns an empty object when string is empty.
+type emptyObjToStr string
+
+// UnmarshalJSON implements the Unmarshaler interface for
+// emptyObjToStr type
+func (e *emptyObjToStr) UnmarshalJSON(b []byte) error {
+	if token := string(b); token != `{}` {
+		*e = emptyObjToStr(b)
+	}
+	return nil
+}
+
+// Request statuses
 const (
-	ReqStatusFail ReqStatus = iota
+	ReqStatusFail reqStatus = iota
 	ReqStatusOK
 )
 
-// User status
+// User statuses
 const (
-	UserStatusInactive UserStatus = iota
+	UserStatusInactive userStatus = iota
 	UserStatusActive
 )
 
@@ -51,17 +68,19 @@ var (
 
 // status is the request status.
 type status struct {
-	Status ReqStatus `json:"status"`
+	Status reqStatus `json:"status"`
 }
 
 // OperationResponse is the response returned by the API
-// for non-idempotent operations.
+// for non-idempotent operations on user.
 type OperationResponse struct {
 	status
 
 	Message string `json:"message"`
 }
 
+// ClassifierOperationResponse is the response returned by the API
+// for non-idempotent operations on user's classifier fields.
 type ClassifierOperationResponse struct {
 	OperationResponse
 
@@ -78,7 +97,7 @@ type UserResponse struct {
 		Name	string		`json:"client_name"`
 		Email	string		`json:"client_email"`
 		Phone	string		`json:"client_phone"`
-		Status	UserStatus	`json:"cod_status"`
+		Status	userStatus	`json:"cod_status"`
 	} `json:"data"`
 }
 
@@ -111,6 +130,13 @@ type User struct {
 	Classifier20	string `json:"classificador20,omitempty"`
 }
 
+type UserStatus struct {
+	ID	string `json:"authorized_id"`
+	Name	string `json:"user_name"`
+	Status	userStatus `json:"status"`
+	Reason	string `json:"reason"`
+}
+
 type Classifier struct {
 	ID		string `json:"field_id"`
 	Value		string `json:"field_value"`
@@ -137,6 +163,10 @@ func (us *UserService) Create(ctx context.Context, u *User) (*OperationResponse,
 }
 
 func (us *UserService) Update(ctx context.Context, u *User) (*OperationResponse, error) {
+	return nil, nil
+}
+
+func (us *UserService) UpdateStatus(ctx context.Context, s *UserStatus) (*OperationResponse, error) {
 	return nil, nil
 }
 
