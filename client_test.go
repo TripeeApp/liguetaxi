@@ -49,7 +49,7 @@ func newMockServer(handler func(w http.ResponseWriter, r *http.Request)) *httpte
 	return httptest.NewServer(http.HandlerFunc(handler))
 }
 
-func TestRequest(t *testing.T) {
+func TestClientRequest(t *testing.T) {
 	testCases := []struct{
 		path	string
 		method	string
@@ -139,7 +139,7 @@ func TestRequest(t *testing.T) {
 	}
 }
 
-func TestRequestError(t *testing.T) {
+func TestClientRequestError(t *testing.T) {
 	testCases := []struct{
 		path	string
 		method	string
@@ -185,7 +185,7 @@ func TestRequestError(t *testing.T) {
 	}
 }
 
-func TestRequestWithContext(t *testing.T) {
+func TestClientRequestWithContext(t *testing.T) {
 	s := newMockServer(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
