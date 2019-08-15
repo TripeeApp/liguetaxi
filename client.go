@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"bytes"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 )
@@ -29,21 +30,22 @@ type status struct {
 	Status reqStatus `json:"status"`
 }
 
-// Error implements the error interface
+// ApiError implements the error interface
 // and prints infos from the request
-type Error struct {
+type ApiError struct {
 	statusCode	int
 	body		[]byte
 	msg		string
 }
 
-func (e *Error) Error() string {
+func (e *ApiError) Error() string {
 	return fmt.Sprintf(errFmt, e.msg, e.statusCode, e.body)
 }
 
-// requester is theinterface that performs a request to the server
+// requester is the interface that performs a request 
+// to the server and parses the payload.
 type requester interface {
-	Request(ctx context.Context, method, path string, body interface{}) (*http.Response, error)
+	Request(ctx context.Context, method string, path endpoint, body, output interface{}) error
 }
 
 // Client encapsulates the requests to the
@@ -69,26 +71,46 @@ func New(host *url.URL, token string, c *http.Client) *Client {
 
 // Request created an API request. A relative path can be providaded
 // in which case it is resolved relative to the host of the Client.
-func (c *Client) Request(ctx context.Context, method, path string, body interface{}) (*http.Response, error) {
-	u, err := c.host.Parse(path)
+func (c *Client) Request(ctx context.Context, method string, path endpoint, body, output interface{}) error {
+	u, err := c.host.Parse(path.String(ctx))
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	var b io.ReadWriter
 	if body != nil {
 		b = new(bytes.Buffer)
 		if err := json.NewEncoder(b).Encode(body); err != nil {
-			return nil, err
+			return err
 		}
 	}
 
 	req, err := http.NewRequest(method, u.String(), b)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	req = req.WithContext(ctx)
 
-	return c.client.Do(req)
+	res, err := c.client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+
+	// TODO: add tests for error on reading body
+	r, _ := ioutil.ReadAll(res.Body)
+
+	// TODO: Implements the XML decoding based on the
+	// endpoint's ContextType(ctx) value.
+	// For now the JSON decoding will work. 
+	if err := json.Unmarshal(r, output); err != nil {
+		return &ApiError{
+			statusCode: res.StatusCode,
+			body: r,
+			msg: err.Error(),
+		}
+	}
+
+	return err
 }

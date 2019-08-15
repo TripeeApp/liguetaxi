@@ -9,18 +9,19 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 )
 
-func TestError(t *testing.T) {
+func TestApiError(t *testing.T) {
 	var (
 		status = http.StatusBadRequest
 		body = []byte("Invalid Request")
 		msg = http.StatusText(http.StatusBadRequest)
 	)
 
-	e := &Error{status, body, msg}
+	e := &ApiError{status, body, msg}
 
 	if want := fmt.Sprintf(errFmt, msg, status, body); e.Error() != want {
 		t.Errorf("got message from Error.Error(): %s; want %s.", e.Error(), want)
@@ -64,23 +65,22 @@ func newMockServer(handler func(w http.ResponseWriter, r *http.Request)) *httpte
 	return httptest.NewServer(http.HandlerFunc(handler))
 }
 
+type dummy struct {
+	Name string `json:"name"`
+}
+
 func TestClientRequest(t *testing.T) {
+
+
+	emptyObj := []byte(`{}`)
+
 	testCases := []struct{
-		path	string
-		method	string
-		body	interface{}
-		server	*httptest.Server
-		want	*http.Response
+		endpoint endpoint
+		method	 string
+		body	 interface{}
+		server	 *httptest.Server
+		wantOut	 interface{}
 	}{
-		{
-			"/",
-			http.MethodGet,
-			nil,
-			newMockServer(func(w http.ResponseWriter, r *http.Request) {
-				w.WriteHeader(http.StatusOK)
-			}),
-			&http.Response{StatusCode: http.StatusOK},
-		},
 		{
 			"",
 			http.MethodGet,
@@ -89,21 +89,21 @@ func TestClientRequest(t *testing.T) {
 				if r.Method != http.MethodGet {
 					t.Errorf("go Request.Method %s; want %s.", r.Method, http.MethodGet)
 				}
-				w.WriteHeader(http.StatusOK)
+				w.Write(emptyObj)
 			}),
-			&http.Response{StatusCode: http.StatusOK},
+			dummy{},
 		},
 		{
-			"foo/",
+			"/foo",
 			http.MethodGet,
 			nil,
 			newMockServer(func(w http.ResponseWriter, r *http.Request) {
-				if got := r.URL.Path; got != "/foo/" {
+				if got := r.URL.Path; got != "/foo/json" {
 					t.Errorf("got Request.URL: %s; want foo/.", got)
 				}
-				w.WriteHeader(http.StatusOK)
+				w.Write(emptyObj)
 			}),
-			&http.Response{StatusCode: http.StatusOK},
+			dummy{},
 		},
 		{
 			"",
@@ -113,14 +113,14 @@ func TestClientRequest(t *testing.T) {
 				if r.Body != http.NoBody {
 					t.Errorf("got Request.Body: %+v, want empty.", r.Body)
 				}
-				w.WriteHeader(http.StatusOK)
+				w.Write(emptyObj)
 			}),
-			&http.Response{StatusCode: http.StatusOK},
+			dummy{},
 		},
 		{
 			"",
 			http.MethodPost,
-			struct{Name string `json:"name"`}{"Testing"},
+			dummy{"Testing"},
 			newMockServer(func(w http.ResponseWriter, r *http.Request) {
 				if r.Body == http.NoBody {
 					t.Error("got Request.Body empty, want not empty.")
@@ -131,23 +131,26 @@ func TestClientRequest(t *testing.T) {
 				if want := []byte(`{"name":"Testing"}`); !bytes.Contains(got, want) {
 					t.Errorf("got body: %s, want %s.", got, want)
 				}
-				w.WriteHeader(http.StatusOK)
+				w.Write([]byte(`{"name":"Testing"}`))
 			}),
-			&http.Response{StatusCode: http.StatusOK},
+			dummy{"Testing"},
 		},
 	}
 
 	for _, tc := range testCases {
+		var output dummy
+
 		u, _ := url.Parse(tc.server.URL)
 		c := New(u, "abc", nil)
 
-		res, err := c.Request(context.Background(), tc.method, tc.path, tc.body)
+		err := c.Request(context.Background(), tc.method, tc.endpoint, tc.body, &output)
 		if err != nil {
-			t.Fatalf("got error %s; want nil.", err.Error())
+			t.Fatalf("got error calling Client.Request(context.Background(), %s, %s, %+v, %+v): %s; want nil.",
+				tc.method, string(tc.endpoint), tc.body, output, err.Error())
 		}
 
-		if res.StatusCode != tc.want.StatusCode {
-			t.Errorf("got Response StatusCode %d; want %d.", res.StatusCode, tc.want.StatusCode)
+		if !reflect.DeepEqual(output, tc.wantOut) {
+			t.Errorf("got output from Client.Request(): %+v; want %+v.", output, tc.wantOut)
 		}
 
 		tc.server.Close()
@@ -156,34 +159,68 @@ func TestClientRequest(t *testing.T) {
 
 func TestClientRequestError(t *testing.T) {
 	testCases := []struct{
-		path	string
-		method	string
-		body	interface{}
-		server	*httptest.Server
+		path		endpoint
+		method		string
+		body		interface{}
+		server		*httptest.Server
+		assertError	func(e error)
 	}{
 		{
 			":",
 			http.MethodGet,
 			nil,
 			newMockServer(nil),
+			nil,
 		},
 		{
 			"",
 			http.MethodGet,
 			make(chan int),
 			newMockServer(nil),
+			nil,
 		},
 		{
 			"",
 			",",
 			nil,
 			newMockServer(nil),
+			nil,
 		},
 		{
 			"",
 			http.MethodPost,
 			nil,
 			httptest.NewUnstartedServer(nil),
+			nil,
+		},
+		{
+			"",
+			http.MethodPost,
+			nil,
+			newMockServer(func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusInternalServerError)
+				w.Write([]byte(http.StatusText(http.StatusInternalServerError)))
+			}),
+			func(e error) {
+				err, ok := e.(*ApiError)
+				if !ok {
+					t.Fatal("got error different from *ApiError")
+				}
+
+				if err != nil {
+					if wantStatus := http.StatusInternalServerError; err.statusCode != wantStatus {
+						t.Errorf("got Error.statusCode: %d; want %d.", err.statusCode, wantStatus)
+					}
+
+					if wantBody := []byte(http.StatusText(http.StatusInternalServerError)); !bytes.Equal(wantBody, err.body) {
+						t.Errorf("got Error.body: %s; want %s.", err.body, wantBody)
+					}
+
+					if wantSubStr := "invalid character 'I'"; !strings.Contains(err.msg, wantSubStr) {
+						t.Errorf("go Error.msg: %s; want it to contain `%s` substring.", err.msg, wantSubStr)
+					}
+				}
+			},
 		},
 	}
 
@@ -191,9 +228,13 @@ func TestClientRequestError(t *testing.T) {
 		u, _ := url.Parse(tc.server.URL)
 		c := New(u, "abc", nil)
 
-		_, err := c.Request(context.Background(), tc.method, tc.path, tc.body)
+		err := c.Request(context.Background(), tc.method, tc.path, tc.body, &dummy{})
 		if err == nil {
 			t.Errorf("got error nil; want not nil.")
+		}
+
+		if tc.assertError != nil {
+			tc.assertError(err)
 		}
 
 		tc.server.Close()
@@ -205,9 +246,9 @@ func TestClientRequestWithContext(t *testing.T) {
 		ctx := r.Context()
 
 		select {
-		case <- time.After(1 * time.Second):
+		case <-time.After(1 * time.Second):
 			t.Errorf("Expected request to be canceled by context")
-		case <- ctx.Done():
+		case <-ctx.Done():
 			return
 		}
 	})
@@ -219,8 +260,7 @@ func TestClientRequestWithContext(t *testing.T) {
 	u, _ := url.Parse(s.URL)
 	c := New(u, "abc", nil)
 
-	_, err := c.Request(ctx, http.MethodGet, "", nil)
-	if err == nil {
+	if err := c.Request(ctx, http.MethodGet, endpoint("/"), nil, nil); err == nil {
 		t.Errorf("got error nil; want not nil")
 	}
 }

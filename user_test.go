@@ -2,17 +2,16 @@ package liguetaxi
 
 import (
 	"context"
-	"io/ioutil"
+	"errors"
 	"net/http"
 	"reflect"
-	"strings"
 	"testing"
 )
 
 func TestUserStatusUnmarshalJSON(t *testing.T) {
 	testCases := []struct{
-		b []byte
-		want userStatus
+		b	[]byte
+		want	userStatus
 	}{
 		{[]byte(`24`), UserStatusActive},
 		{[]byte(`25`), UserStatusInactive},
@@ -31,8 +30,8 @@ func TestUserStatusUnmarshalJSON(t *testing.T) {
 
 func TestEmptyObjToStrUnmarshalJSON(t *testing.T) {
 	testCases := []struct{
-		b []byte
-		want string
+		b	[]byte
+		want	string
 	}{
 		{[]byte(`non-empty string`), "non-empty string"},
 		{[]byte(`{}`), ""},
@@ -50,45 +49,45 @@ func TestEmptyObjToStrUnmarshalJSON(t *testing.T) {
 }
 
 type testRequester struct{
-	body interface{}
-	ctx context.Context
-	method string
-	path string
+	body	interface{}
+	ctx	context.Context
+	err	error
+	method	string
+	output	interface{}
+	path	endpoint
 
-	res *http.Response
-	err error
 }
 
-func (t *testRequester) Request(ctx context.Context, method, path string, body interface{}) (*http.Response, error) {
+func (t *testRequester) Request(ctx context.Context, method string, path endpoint, body, output interface{}) error {
 	t.ctx = ctx
 	t.method = method
 	t.path = path
 	t.body = body
 
-	return t.res, t.err
+	out := reflect.ValueOf(output)
+	if !out.IsNil() && out.Elem().CanSet() && t.output != nil {
+		out.Elem().Set(reflect.ValueOf(t.output))
+	}
+
+	return t.err
 }
 
 func TestUserRead(t *testing.T) {
 	testCases := []struct{
-		ctx		context.Context
-		name		string
-		id		string
-		res		*http.Response
-		method		string
-		path		string
-		body		userFilter
-		wantRes		UserResponse
+		ctx	context.Context
+		name	string
+		id	string
+		method	string
+		path	endpoint
+		body	userFilter
+		wantRes	UserResponse
 	}{
 		{
 			context.Background(),
 			"test",
 			"123",
-			&http.Response{
-				StatusCode: http.StatusOK,
-				Body: ioutil.NopCloser(strings.NewReader(`{"status":1}`)),
-			},
 			http.MethodPost,
-			readUserEndpoint.String(`json`),
+			readUserEndpoint,
 			userFilter{ "123", "test"},
 			UserResponse{
 				status: status{ReqStatusOK},
@@ -97,7 +96,7 @@ func TestUserRead(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		req := &testRequester{res: tc.res}
+		req := &testRequester{output: tc.wantRes}
 		u := &UserService{req}
 
 		res, err := u.Read(tc.ctx, tc.id, tc.name)
@@ -123,6 +122,24 @@ func TestUserRead(t *testing.T) {
 
 		if !reflect.DeepEqual(res, tc.wantRes) {
 			t.Errorf("got UserResponse: %+v; want %+v.", res, tc.wantRes)
+		}
+	}
+}
+
+func TestUserReadError(t *testing.T) {
+	testCases := []struct{
+		err	error
+	}{
+		{errors.New("Error")},
+	}
+
+	for _, tc := range testCases {
+		req := &testRequester{err: tc.err}
+		u := &UserService{req}
+
+		_, err := u.Read(nil, "123", "Test")
+		if err == nil {
+			t.Error("got error nil while calling User.Read; want not nil.")
 		}
 	}
 }

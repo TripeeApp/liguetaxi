@@ -2,14 +2,8 @@ package liguetaxi
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
 )
-
-// reqStatus is the request status.
-// Success = 1
-// Fail = 0
-type reqStatus int
 
 // userStatus is the user status.
 // Active - 1
@@ -38,12 +32,6 @@ func (e *emptyObjToStr) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-// Request statuses
-const (
-	ReqStatusFail reqStatus = iota
-	ReqStatusOK
-)
-
 // User statuses
 const (
 	UserStatusInactive userStatus = iota
@@ -69,11 +57,6 @@ var (
 	// Endpoint for creating classifier field.
 	createClassifierEndpoint endpoint = `user/create_authorized_field`
 )
-
-// status is the request status.
-type status struct {
-	Status reqStatus `json:"status"`
-}
 
 // OperationResponse is the response returned by the API
 // for non-idempotent operations on user.
@@ -105,6 +88,7 @@ type UserResponse struct {
 	} `json:"data"`
 }
 
+// Pulled off for testing
 type userFilter struct{
 	ID	string `json:"unique_field"`
 	Name	string `json:"user_name"`
@@ -166,11 +150,13 @@ type UserService struct {
 
 // Read returns User infos.
 func (us *UserService) Read(ctx context.Context, id, name string) (UserResponse, error) {
-	resType := readUserEndpoint.ContextType(ctx)
-	res, _ := us.client.Request(ctx, http.MethodPost, readUserEndpoint.String(resType), userFilter{id, name})
-
 	var u UserResponse
-	json.NewDecoder(res.Body).Decode(&u)
+
+	err := us.client.Request(ctx, http.MethodPost, readUserEndpoint, userFilter{id, name}, &u)
+	if err != nil {
+		return u, err
+	}
+
 	return u, nil
 }
 

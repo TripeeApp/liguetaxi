@@ -34,8 +34,8 @@ func (e *endpoint) ContextType(ctx context.Context) string {
 	return suffix
 }
 
-// String returns the endpoint suffixed with the type
+// String reads the Context and returns the endpoint suffixed with the type
 // of the request: json or xml.
-func (e *endpoint) String(suffix string) string {
-	return fmt.Sprintf("%s/%s", *e, suffix)
+func (e *endpoint) String(ctx context.Context) string {
+	return fmt.Sprintf("%s/%s", *e, e.ContextType(ctx))
 }
