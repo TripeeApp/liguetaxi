@@ -131,6 +131,11 @@ type UserStatus struct {
 	Reason	string		`json:"reason"`
 }
 
+type classifierFilter struct {
+	Field string `json:"field"`
+	Value string `json:"field_value"`
+}
+
 type Classifier struct {
 	ID		string `json:"field_id"`
 	Value		string `json:"field_value"`
@@ -184,8 +189,12 @@ func (us *UserService) UpdateStatus(ctx context.Context, s *UserStatus) (Operati
 	return op, nil
 }
 
-func (us *UserService) ReadClassifier(ctx context.Context, field string, value string) (*ClassifierResponse, error) {
-	return nil, nil
+func (us *UserService) ReadClassifier(ctx context.Context, field string, value string) (ClassifierResponse, error) {
+	var c ClassifierResponse
+
+	us.client.Request(ctx, http.MethodPost, readClassifierEndpoint, classifierFilter{field, value}, &c)
+
+	return c, nil
 }
 
 func (us *UserService) CreateClassifier(ctx context.Context) (*ClassifierOperationResponse, error) {
