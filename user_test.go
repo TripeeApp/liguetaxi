@@ -217,6 +217,22 @@ func TestUserError(t *testing.T) {
 			},
 			errors.New("Error"),
 		},
+		{
+			"Create()",
+			func(req requester) error {
+				_, err := (&UserService{req}).Create(context.Background(), nil)
+				return err
+			},
+			errors.New("Error"),
+		},
+		{
+			"Update()",
+			func(req requester) error {
+				_, err := (&UserService{req}).Update(context.Background(), nil)
+				return err
+			},
+			errors.New("Error"),
+		},
 	}
 
 	for _, tc := range testCases {
