@@ -176,8 +176,12 @@ func (us *UserService) Update(ctx context.Context, u *User) (OperationResponse, 
 	return op, nil
 }
 
-func (us *UserService) UpdateStatus(ctx context.Context, s *UserStatus) (*OperationResponse, error) {
-	return nil, nil
+func (us *UserService) UpdateStatus(ctx context.Context, s *UserStatus) (OperationResponse, error) {
+	var op OperationResponse
+
+	us.client.Request(ctx, http.MethodPost, updateUserStatusEndpoint, s, &op)
+
+	return op, nil
 }
 
 func (us *UserService) ReadClassifier(ctx context.Context, field string, value string) (*ClassifierResponse, error) {
