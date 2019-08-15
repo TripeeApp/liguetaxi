@@ -7,7 +7,7 @@ import (
 func TestUserStatusUnmarshalJSON(t *testing.T) {
 	testCases := []struct{
 		b []byte
-		want UserStatus
+		want userStatus
 	}{
 		{[]byte(`24`), UserStatusActive},
 		{[]byte(`25`), UserStatusInactive},
@@ -29,6 +29,7 @@ func TestEmptyObjToStrUnmarshalJSON(t *testing.T) {
 		b []byte
 		want string
 	}{
+		{[]byte(`non-empty string`), "non-empty string"},
 		{[]byte(`{}`), ""},
 	}
 
