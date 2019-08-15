@@ -28,7 +28,7 @@ For more sample code snippets, head over to the `_test.go` files.
 
 ### Authentication ###
 
-The liguetaxi librarty handles the Authorization header with a custom Transport.
+The liguetaxi library handles the Authorization header with a custom Transport.
 
 ### Creating and Updating Resources ###
 
