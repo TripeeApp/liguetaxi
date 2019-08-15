@@ -3,11 +3,43 @@ package liguetaxi
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"bytes"
 	"io"
 	"net/http"
 	"net/url"
 )
+
+// reqStatus is the request status.
+// Success = 1
+// Fail = 0
+type reqStatus int
+
+const (
+	// Request statuses.
+	ReqStatusFail reqStatus = iota
+	ReqStatusOK
+
+	// Error message format.
+	errFmt = `Error while request the LigueTaxi API: %s; Status Code: %d; Body: %s.`
+)
+
+// status is the request status.
+type status struct {
+	Status reqStatus `json:"status"`
+}
+
+// Error implements the error interface
+// and prints infos from the request
+type Error struct {
+	statusCode	int
+	body		[]byte
+	msg		string
+}
+
+func (e *Error) Error() string {
+	return fmt.Sprintf(errFmt, e.msg, e.statusCode, e.body)
+}
 
 // requester is theinterface that performs a request to the server
 type requester interface {
