@@ -46,40 +46,27 @@ func TestEndpointContextType(t *testing.T) {
 
 func TestEndpointString(t *testing.T) {
 	testCases := []struct{
-		ctx	 context.Context
+		suffix	 string
 		endpoint endpoint
 		want	 string
 	}{
 		{
-			context.Background(),
+			Json,
 			endpoint("/test"),
 			"/test/json",
 		},
 		{
-
-			context.WithValue(context.Background(), ResType, Json),
+			Xml,
 			endpoint("/test2"),
-			"/test2/json",
-		},
-		{
-
-			context.WithValue(context.Background(), ResType, Xml),
-			endpoint("/test3"),
-			"/test3/xml",
-		},
-		{
-
-			context.WithValue(context.Background(), ResType, ""),
-			endpoint("/test4"),
-			"/test4/json",
+			"/test2/xml",
 		},
 	}
 
 	for _, tc := range testCases {
-		e := tc.endpoint.String(tc.ctx)
+		e := tc.endpoint.String(tc.suffix)
 
 		if e != tc.want {
-			t.Errorf("got Endpoint.String(%+v): %s; want %s.", tc.ctx, e, tc.want)
+			t.Errorf("got Endpoint.String(%s): %s; want %s.", tc.suffix, e, tc.want)
 		}
 	}
 }
