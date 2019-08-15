@@ -9,7 +9,7 @@ import "bitbicket.org/mobilitee/liguetaxi"
 ```
 
 Construct a new LigueTaxi client, then use the various services on the client to
-access differente parts of the LigueTaxi API. For example:
+access different parts of the LigueTaxi API. For example:
 
 ```go
 host, _ := url.Parse("https://portal.taxidigital.net/suporte/php/API_TD/api/")
