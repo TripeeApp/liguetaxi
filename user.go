@@ -197,6 +197,10 @@ func (us *UserService) ReadClassifier(ctx context.Context, field string, value s
 	return c, nil
 }
 
-func (us *UserService) CreateClassifier(ctx context.Context) (*ClassifierOperationResponse, error) {
-	return nil, nil
+func (us *UserService) CreateClassifier(ctx context.Context, c *Classifier) (ClassifierOperationResponse, error) {
+	var co ClassifierOperationResponse
+
+	us.client.Request(ctx, http.MethodPost, createClassifierEndpoint, c, &co)
+
+	return co, nil
 }
