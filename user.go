@@ -182,7 +182,9 @@ func (us *UserService) Create(ctx context.Context, u *User) (OperationResponse, 
 func (us *UserService) Update(ctx context.Context, u *User) (OperationResponse, error) {
 	var op OperationResponse
 
-	us.client.Request(ctx, http.MethodPost, updateUserEndpoint, u, &op)
+	if err := us.client.Request(ctx, http.MethodPost, updateUserEndpoint, u, &op); err != nil {
+		return op, err
+	}
 
 	return op, nil
 }
