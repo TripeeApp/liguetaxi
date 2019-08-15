@@ -11,7 +11,7 @@ import (
 
 // requester is theinterface that performs a request to the server
 type requester interface {
-	Request(ctx context.Context, string, method, path string, body interface{}) (*http.Response, error)
+	Request(ctx context.Context, method, path string, body interface{}) (*http.Response, error)
 }
 
 // Client encapsulates the requests to the
