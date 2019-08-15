@@ -72,20 +72,23 @@ func (t *testRequester) Request(ctx context.Context, method string, path endpoin
 	return t.err
 }
 
-func TestUserRead(t *testing.T) {
+func TestUser(t *testing.T) {
 	testCases := []struct{
-		ctx	context.Context
 		name	string
-		id	string
+		call	func(ctx context.Context, req requester) (resp interface{}, err error)
+		ctx	context.Context
 		method	string
 		path	endpoint
-		body	userFilter
-		wantRes	UserResponse
+		body	interface{}
+		wantRes	interface{}
 	}{
 		{
+			"Read()",
+			func(ctx context.Context, req requester) (resp interface{}, err error) {
+				resp, err = (&UserService{req}).Read(ctx, "123", "test")
+				return
+			},
 			context.Background(),
-			"test",
-			"123",
 			http.MethodPost,
 			readUserEndpoint,
 			userFilter{ "123", "test"},
@@ -96,33 +99,35 @@ func TestUserRead(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		req := &testRequester{output: tc.wantRes}
-		u := &UserService{req}
+		tc := tc // create scoped test case
+		t.Run(tc.name, func(t *testing.T) {
+			req := &testRequester{output: tc.wantRes}
 
-		res, err := u.Read(tc.ctx, tc.id, tc.name)
-		if err != nil {
-			t.Fatalf("got error while calling User.Read(%+v, %s, %s): %s, want nil", tc.ctx, tc.id, tc.name, err.Error())
-		}
+			res, err := tc.call(tc.ctx, req)
+			if err != nil {
+				t.Fatalf("got error while calling User %s: %s, want nil", tc.name, err.Error())
+			}
 
-		if !reflect.DeepEqual(req.ctx, tc.ctx) {
-			t.Errorf("got Requester Context %+v; want %+v.", req.ctx, tc.ctx)
-		}
+			if !reflect.DeepEqual(req.ctx, tc.ctx) {
+				t.Errorf("got Requester Context %+v; want %+v.", req.ctx, tc.ctx)
+			}
 
-		if req.method != tc.method {
-			t.Errorf("got Requester Method: %s; want %s.", req.method, tc.method)
-		}
+			if req.method != tc.method {
+				t.Errorf("got request method: %s; want %s.", req.method, tc.method)
+			}
 
-		if req.path != tc.path {
-			t.Errorf("got Requester Path: %s; want %s.", req.path, tc.path)
-		}
+			if req.path != tc.path {
+				t.Errorf("got request path: %s; want %s.", req.path, tc.path)
+			}
 
-		if !reflect.DeepEqual(req.body, tc.body) {
-			t.Errorf("got Requester Bodt: %+v; want %+v.", req.body, tc.body)
-		}
+			if !reflect.DeepEqual(req.body, tc.body) {
+				t.Errorf("got request body: %+v; want %+v.", req.body, tc.body)
+			}
 
-		if !reflect.DeepEqual(res, tc.wantRes) {
-			t.Errorf("got UserResponse: %+v; want %+v.", res, tc.wantRes)
-		}
+			if !reflect.DeepEqual(res, tc.wantRes) {
+				t.Errorf("got response: %+v; want %+v.", res, tc.wantRes)
+			}
+		})
 	}
 }
 
