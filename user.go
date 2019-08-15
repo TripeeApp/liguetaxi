@@ -123,7 +123,7 @@ type User struct {
 	Classifier20	string `json:"classificador20,omitempty"`
 }
 
-// UserStatus is t
+// UserStatus is the user status infos.
 type UserStatus struct {
 	ID	string		`json:"authorized_id"`
 	Name	string		`json:"user_name"`
@@ -136,12 +136,15 @@ type classifierFilter struct {
 	Value string `json:"field_value"`
 }
 
+// Classifier is the classifier field infos.
 type Classifier struct {
 	ID		string `json:"field_id"`
 	Value		string `json:"field_value"`
 	AdditionalValue string `json:"field_additional_value"`
 }
 
+// ClassifierResponse is the response returned by the API
+// when reading the classifier field info.
 type ClassifierResponse struct {
 	status
 
@@ -153,26 +156,29 @@ type UserService struct {
 	client requester
 }
 
-// Read returns User infos.
+// Read returns User infos or an error.
 func (us *UserService) Read(ctx context.Context, id, name string) (UserResponse, error) {
 	var u UserResponse
 
-	err := us.client.Request(ctx, http.MethodPost, readUserEndpoint, userFilter{id, name}, &u)
-	if err != nil {
+	if err := us.client.Request(ctx, http.MethodPost, readUserEndpoint, userFilter{id, name}, &u); err != nil {
 		return u, err
 	}
 
 	return u, nil
 }
 
+// Create returns the status operation for creating a user or an error.
 func (us *UserService) Create(ctx context.Context, u *User) (OperationResponse, error) {
 	var op OperationResponse
 
-	us.client.Request(ctx, http.MethodPost, createUserEndpoint, u, &op)
+	if err := us.client.Request(ctx, http.MethodPost, createUserEndpoint, u, &op); err != nil {
+		return op, err
+	}
 
 	return op, nil
 }
 
+// Update returns the status operation for updating user or an error.
 func (us *UserService) Update(ctx context.Context, u *User) (OperationResponse, error) {
 	var op OperationResponse
 
@@ -181,6 +187,7 @@ func (us *UserService) Update(ctx context.Context, u *User) (OperationResponse, 
 	return op, nil
 }
 
+// UpdateStatus returns the status operation for updating the user status or an error.
 func (us *UserService) UpdateStatus(ctx context.Context, s *UserStatus) (OperationResponse, error) {
 	var op OperationResponse
 
@@ -189,6 +196,7 @@ func (us *UserService) UpdateStatus(ctx context.Context, s *UserStatus) (Operati
 	return op, nil
 }
 
+// ReadClassifier returns the classifier field info.
 func (us *UserService) ReadClassifier(ctx context.Context, field string, value string) (ClassifierResponse, error) {
 	var c ClassifierResponse
 
@@ -197,6 +205,7 @@ func (us *UserService) ReadClassifier(ctx context.Context, field string, value s
 	return c, nil
 }
 
+// CreateClassifier returns the status operation for creating classifier field or an error.
 func (us *UserService) CreateClassifier(ctx context.Context, c *Classifier) (ClassifierOperationResponse, error) {
 	var co ClassifierOperationResponse
 
