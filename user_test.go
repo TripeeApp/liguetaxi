@@ -10,6 +10,7 @@ func TestUserStatusUnmarshalJSON(t *testing.T) {
 		want UserStatus
 	}{
 		{[]byte(`24`), UserStatusActive},
+		{[]byte(`25`), UserStatusInactive},
 	}
 
 	for _, tc := range testCases {
