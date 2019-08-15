@@ -96,6 +96,20 @@ func TestUser(t *testing.T) {
 				status: status{ReqStatusOK},
 			},
 		},
+		{
+			"Create()",
+			func(ctx context.Context, req requester) (resp interface{}, err error) {
+				resp, err = (&UserService{req}).Create(ctx, &User{Name: "Test"})
+				return
+			},
+			context.Background(),
+			http.MethodPost,
+			createUserEndpoint,
+			User{Name: "Test"},
+			OperationResponse{
+				status: status{ReqStatusOK},
+			},
+		},
 	}
 
 	for _, tc := range testCases {
