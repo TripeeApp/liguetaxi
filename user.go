@@ -48,22 +48,22 @@ const (
 
 var (
 	// Endpoint for reading user info.
-	getUserEndpoint endpoint = `user/check_authorized`
+	readUserEndpoint endpoint = `user/check_authorized`
 
 	// Endpoint for editing user status.
-	editUserStatusEndpoint endpoint = `user/status_authorized`
+	updateUserStatusEndpoint endpoint = `user/status_authorized`
 
 	// Endpoint for editing user info.
-	editUserEndpoint endpoint = `user/edit_authorized`
+	updateUserEndpoint endpoint = `user/edit_authorized`
 
 	// Endpoint for creating user.
 	createUserEndpoint endpoint = `user/create_authorized`
 
 	// Endpoint for reading classifier field.
-	getUserFieldEndpoint endpoint = `user/check_authorized_field`
+	readClassifierEndpoint endpoint = `user/check_authorized_field`
 
 	// Endpoint for creating classifier field.
-	createUserFieldEndpoint endpoint = `user/create_authorized_field`
+	createClassifierEndpoint endpoint = `user/create_authorized_field`
 )
 
 // status is the request status.
@@ -101,6 +101,11 @@ type UserResponse struct {
 	} `json:"data"`
 }
 
+type userFilter struct{
+	ID	string `json:"unique_field"`
+	Name	string `json:"user_name"`
+}
+
 // User is sent to server when creating or editing user.
 type User struct {
 	ID		string `json:"unique_field,omitempty"`
@@ -130,11 +135,12 @@ type User struct {
 	Classifier20	string `json:"classificador20,omitempty"`
 }
 
+// UserStatus is t
 type UserStatus struct {
-	ID	string `json:"authorized_id"`
-	Name	string `json:"user_name"`
-	Status	userStatus `json:"status"`
-	Reason	string `json:"reason"`
+	ID	string		`json:"authorized_id"`
+	Name	string		`json:"user_name"`
+	Status	userStatus	`json:"status"`
+	Reason	string		`json:"reason"`
 }
 
 type Classifier struct {
@@ -154,7 +160,8 @@ type UserService struct {
 	client requester
 }
 
-func (us *UserService) Read(ctx context.Context, name, id string) (*UserResponse, error) {
+// Read returns User infos.
+func (us *UserService) Read(ctx context.Context, id, name string) (*UserResponse, error) {
 	return nil, nil
 }
 
