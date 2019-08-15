@@ -36,12 +36,6 @@ func (e *endpoint) ContextType(ctx context.Context) string {
 
 // String returns the endpoint suffixed with the type
 // of the request: json or xml.
-// The suffix is read from the context. If there's
-// no suffix set in context, defaults to `json`.
-func (e *endpoint) String(ctx context.Context) string {
-	suffix := Json
-	if t, ok := ctx.Value(ResType).(string); ok && t != "" {
-		suffix = t
-	}
+func (e *endpoint) String(suffix string) string {
 	return fmt.Sprintf("%s/%s", *e, suffix)
 }
