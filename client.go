@@ -55,6 +55,10 @@ type Client struct {
 	host *url.URL
 	// client is the http client.
 	client *http.Client
+
+	// User is the service that handles http logic for requests
+	// related to the user.
+	User *UserService
 }
 
 // New returns a Client for requests Ligue Taxi API.
@@ -66,7 +70,10 @@ func New(host *url.URL, token string, c *http.Client) *Client {
 		token,
 		c.Transport,
 	}
-	return &Client{host, c}
+
+	client := &Client{host: host, client: c}
+	client.User = &UserService{client}
+	return client
 }
 
 // Request created an API request. A relative path can be providaded
@@ -112,5 +119,5 @@ func (c *Client) Request(ctx context.Context, method string, path endpoint, body
 		}
 	}
 
-	return err
+	return nil
 }

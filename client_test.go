@@ -61,6 +61,14 @@ func TestNew(t *testing.T) {
 	}
 }
 
+func TestNewClientServices(t *testing.T) {
+	c := New(&url.URL{}, "", nil)
+
+	if c.User == nil {
+		t.Errorf("got Client.User nil; want not nil.")
+	}
+}
+
 func newMockServer(handler func(w http.ResponseWriter, r *http.Request)) *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(handler))
 }
