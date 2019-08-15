@@ -105,7 +105,21 @@ func TestUser(t *testing.T) {
 			context.Background(),
 			http.MethodPost,
 			createUserEndpoint,
-			User{Name: "Test"},
+			&User{Name: "Test"},
+			OperationResponse{
+				status: status{ReqStatusOK},
+			},
+		},
+		{
+			"Update()",
+			func(ctx context.Context, req requester) (resp interface{}, err error) {
+				resp, err = (&UserService{req}).Update(ctx, &User{Name: "Test"})
+				return
+			},
+			context.Background(),
+			http.MethodPost,
+			createUserEndpoint,
+			&User{Name: "Test"},
 			OperationResponse{
 				status: status{ReqStatusOK},
 			},
