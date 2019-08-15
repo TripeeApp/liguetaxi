@@ -14,12 +14,31 @@ func TestUserStatusUnmarshalJSON(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		var status UserStatus
+		var status userStatus
 
 		status.UnmarshalJSON(tc.b)
 
 		if status != tc.want {
-			t.Errorf("got UserStatus.UnmarshalJSON(%s): %v; want %v.", tc.b, status, tc.want)
+			t.Errorf("got userStatus.UnmarshalJSON(%s): %v; want %v.", tc.b, status, tc.want)
+		}
+	}
+}
+
+func TestEmptyObjToStrUnmarshalJSON(t *testing.T) {
+	testCases := []struct{
+		b []byte
+		want string
+	}{
+		{[]byte(`{}`), ""},
+	}
+
+	for _, tc := range testCases {
+		var str emptyObjToStr
+
+		str.UnmarshalJSON(tc.b)
+
+		if string(str) != tc.want {
+			t.Errorf("got emptyObjToStr.UnmarshalJSON(%s): %v; want %s.", tc.b, str, tc.want)
 		}
 	}
 }
