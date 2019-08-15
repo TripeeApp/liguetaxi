@@ -171,7 +171,7 @@ func TestUser(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc // create scoped test case
+		tc := tc // creates scoped test case
 		t.Run(tc.name, func(t *testing.T) {
 			req := &testRequester{output: tc.wantRes}
 
@@ -203,20 +203,31 @@ func TestUser(t *testing.T) {
 	}
 }
 
-func TestUserReadError(t *testing.T) {
+func TestUserError(t *testing.T) {
 	testCases := []struct{
+		name	string
+		call	func(req requester) error
 		err	error
 	}{
-		{errors.New("Error")},
+		{
+			"Read()",
+			func(req requester) error {
+				_, err := (&UserService{req}).Read(context.Background(), "123", "test")
+				return err
+			},
+			errors.New("Error"),
+		},
 	}
 
 	for _, tc := range testCases {
-		req := &testRequester{err: tc.err}
-		u := &UserService{req}
+		tc := tc // creates scoped test case
+		t.Run(tc.name, func(t *testing.T) {
+			req := &testRequester{err: tc.err}
 
-		_, err := u.Read(nil, "123", "Test")
-		if err == nil {
-			t.Error("got error nil while calling User.Read; want not nil.")
-		}
+			err := tc.call(req)
+			if !reflect.DeepEqual(err, tc.err) {
+				t.Errorf("got error: %s; want %s.", err, tc.err)
+			}
+		})
 	}
 }
