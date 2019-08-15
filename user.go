@@ -202,7 +202,9 @@ func (us *UserService) UpdateStatus(ctx context.Context, s *UserStatus) (Operati
 func (us *UserService) ReadClassifier(ctx context.Context, field string, value string) (ClassifierResponse, error) {
 	var c ClassifierResponse
 
-	us.client.Request(ctx, http.MethodPost, readClassifierEndpoint, classifierFilter{field, value}, &c)
+	if err := us.client.Request(ctx, http.MethodPost, readClassifierEndpoint, classifierFilter{field, value}, &c); err != nil {
+		return c, err
+	}
 
 	return c, nil
 }
