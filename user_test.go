@@ -138,6 +138,36 @@ func TestUser(t *testing.T) {
 				status: status{ReqStatusOK},
 			},
 		},
+		{
+			"ReadClassifier()",
+			func(ctx context.Context, req requester) (resp interface{}, err error) {
+				resp, err = (&UserService{req}).ReadClassifier(ctx, "1", "test")
+				return
+			},
+			context.Background(),
+			http.MethodPost,
+			readClassifierEndpoint,
+			classifierFilter{Field: "1", Value: "test"},
+			ClassifierResponse{
+				status: status{ReqStatusOK},
+			},
+		},
+		{
+			"CreateClassifier()",
+			func(ctx context.Context, req requester) (resp interface{}, err error) {
+				resp, err = (&UserService{req}).CreateClassifier(ctx, &Classifier{"1", "test", "test2"})
+				return
+			},
+			context.Background(),
+			http.MethodPost,
+			createClassifierEndpoint,
+			&Classifier{"1", "test", "test2"},
+			ClassifierOperationResponse{
+				OperationResponse: OperationResponse{
+					status: status{ReqStatusOK},
+				},
+			},
+		},
 	}
 
 	for _, tc := range testCases {
