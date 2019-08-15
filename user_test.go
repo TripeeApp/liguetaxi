@@ -233,6 +233,14 @@ func TestUserError(t *testing.T) {
 			},
 			errors.New("Error"),
 		},
+		{
+			"ReadClassifier()",
+			func(req requester) error {
+				_, err := (&UserService{req}).ReadClassifier(context.Background(), "1", "test")
+				return err
+			},
+			errors.New("Error"),
+		},
 	}
 
 	for _, tc := range testCases {
