@@ -46,6 +46,17 @@ newUser := &liguetaxi.User{
 ligtaxi.User.Create(context.Background(), newUser)
 ```
 
+## Tests ##
+
+### Running unit tests ###
+
+You can run unit tests using the following command 
+from the library's root directory:
+
+```sh
+$ go test -v -cover
+```
+
 ## Roadmap ##
 
 This library is being initally developed for an internal application at
