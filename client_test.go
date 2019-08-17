@@ -114,6 +114,30 @@ func TestClientRequest(t *testing.T) {
 			dummy{},
 		},
 		{
+			"/foo",
+			http.MethodPost,
+			nil,
+			newMockServer(func(w http.ResponseWriter, r *http.Request) {
+				if c := r.Header.Get("Content-Type"); c != "application/json" {
+					t.Errorf("got 'Content-Type' Header: '%s'; want 'application/json'.", c)
+				}
+				w.Write(emptyObj)
+			}),
+			dummy{},
+		},
+		{
+			"/foo",
+			http.MethodPost,
+			nil,
+			newMockServer(func(w http.ResponseWriter, r *http.Request) {
+				if c := r.Header.Get("Cache-Control"); c != "no-cache" {
+					t.Errorf("got 'Cache-Control' Header: '%s'; want 'no-cache'.", c)
+				}
+				w.Write(emptyObj)
+			}),
+			dummy{},
+		},
+		{
 			"",
 			http.MethodGet,
 			nil,

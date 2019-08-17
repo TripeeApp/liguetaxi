@@ -96,6 +96,8 @@ func (c *Client) Request(ctx context.Context, method string, path endpoint, body
 	if err != nil {
 		return err
 	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Cache-Control", "no-cache")
 
 	req = req.WithContext(ctx)
 
