@@ -91,7 +91,7 @@ type UserResponse struct {
 
 // Pulled off for testing
 type userFilter struct{
-	ID	string `json:"unique_field,omitempty"`
+	ID	string `json:"unique_field"`
 	Name	string `json:"user_name,omitempty"`
 }
 
