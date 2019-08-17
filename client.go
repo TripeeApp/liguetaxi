@@ -1,10 +1,10 @@
 package liguetaxi
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
-	"bytes"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -33,16 +33,16 @@ type status struct {
 // ApiError implements the error interface
 // and prints infos from the request
 type ApiError struct {
-	statusCode	int
-	body		[]byte
-	msg		string
+	statusCode int
+	body       []byte
+	msg        string
 }
 
 func (e *ApiError) Error() string {
 	return fmt.Sprintf(errFmt, e.msg, e.statusCode, e.body)
 }
 
-// requester is the interface that performs a request 
+// requester is the interface that performs a request
 // to the server and parses the payload.
 type requester interface {
 	Request(ctx context.Context, method string, path endpoint, body, output interface{}) error
@@ -110,12 +110,12 @@ func (c *Client) Request(ctx context.Context, method string, path endpoint, body
 
 	// TODO: Implements the XML decoding based on the
 	// endpoint's ContextType(ctx) value.
-	// For now the JSON decoding will work. 
+	// For now the JSON decoding will work.
 	if err := json.Unmarshal(r, output); err != nil {
 		return &ApiError{
 			statusCode: res.StatusCode,
-			body: r,
-			msg: err.Error(),
+			body:       r,
+			msg:        err.Error(),
 		}
 	}
 

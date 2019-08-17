@@ -80,18 +80,19 @@ type UserResponse struct {
 	status
 
 	Data struct {
-		ID	string		`json:"authorized_id"`
-		Name	string		`json:"client_name"`
-		Email	string		`json:"client_email"`
-		Phone	string		`json:"client_phone"`
-		Status	userStatus	`json:"cod_status"`
+		ID			string		`json:"authorized_id"`
+		Name			string		`json:"client_name"`
+		Email			string		`json:"client_email"`
+		Phone			string		`json:"client_phone"`
+		Status			userStatus	`json:"cod_status"`
+		StatusDescription	string		`json:"status_description"`
 	} `json:"data"`
 }
 
 // Pulled off for testing
 type userFilter struct{
-	ID	string `json:"unique_field"`
-	Name	string `json:"user_name"`
+	ID	string `json:"unique_field,omitempty"`
+	Name	string `json:"user_name,omitempty"`
 }
 
 // User is sent to server when creating or editing user.
@@ -138,9 +139,10 @@ type classifierFilter struct {
 
 // Classifier is the classifier field infos.
 type Classifier struct {
-	ID		string `json:"field_id"`
+	ID		string `json:"field_id,omitempty"`
+	Field		string `json:"field,omitempty"`
 	Value		string `json:"field_value"`
-	AdditionalValue string `json:"field_additional_value"`
+	AdditionalValue string `json:"field_additional_value,omitempty"`
 }
 
 // ClassifierResponse is the response returned by the API
@@ -199,7 +201,7 @@ func (us *UserService) UpdateStatus(ctx context.Context, s *UserStatus) (Operati
 }
 
 // ReadClassifier returns the classifier field info.
-func (us *UserService) ReadClassifier(ctx context.Context, field string, value string) (ClassifierResponse, error) {
+func (us *UserService) ReadClassifier(ctx context.Context, field, value string) (ClassifierResponse, error) {
 	var c ClassifierResponse
 
 	if err := us.client.Request(ctx, http.MethodPost, readClassifierEndpoint, classifierFilter{field, value}, &c); err != nil {

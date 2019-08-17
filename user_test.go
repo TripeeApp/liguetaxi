@@ -155,13 +155,13 @@ func TestUser(t *testing.T) {
 		{
 			"CreateClassifier()",
 			func(ctx context.Context, req requester) (resp interface{}, err error) {
-				resp, err = (&UserService{req}).CreateClassifier(ctx, &Classifier{"1", "test", "test2"})
+				resp, err = (&UserService{req}).CreateClassifier(ctx, &Classifier{Field: "test", Value: "test2"})
 				return
 			},
 			context.Background(),
 			http.MethodPost,
 			createClassifierEndpoint,
-			&Classifier{"1", "test", "test2"},
+			&Classifier{Field: "test", Value: "test2"},
 			ClassifierOperationResponse{
 				OperationResponse: OperationResponse{
 					status: status{ReqStatusOK},
