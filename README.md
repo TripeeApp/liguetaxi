@@ -53,9 +53,11 @@ ligtaxi.User.Create(context.Background(), newUser)
 You can run unit tests using the following command 
 from the library's root directory:
 
-```sh
-$ go test -v -cover
-```
+    $ go test -v -cover
+
+### Running integration tests ###
+
+You can run integration tests from the `test`directory. See the integration tests [README](./test)
 
 ## Roadmap ##
 
