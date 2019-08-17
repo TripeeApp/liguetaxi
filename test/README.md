@@ -1,8 +1,6 @@
-### liguetax tests ###
+# liguetaxi tests #
 
-This directory ctonains additional test suites beyonde unit tests already in [../liguetaxi](../liguetaxi). WHereas the unit tests run very quickly (since they don't make any network calls), the tests in this directory hit directly the [Ligue Taxi API]().
-
-The test package are:
+This directory contains additional test suites beyond unit tests. Whereas the unit tests run very quickly (since they don't make any network calls), the tests in this directory hit directly the [Ligue Taxi API]().
 
 ## integration ##
 
