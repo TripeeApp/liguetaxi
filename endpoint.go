@@ -37,5 +37,5 @@ func (e endpoint) ContextType(ctx context.Context) string {
 // String reads the Context and returns the endpoint suffixed with the type
 // of the request: json or xml.
 func (e endpoint) String(ctx context.Context) string {
-	return fmt.Sprintf("%s/%s", *e, e.ContextType(ctx))
+	return fmt.Sprintf("%s/%s", e, e.ContextType(ctx))
 }
