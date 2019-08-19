@@ -24,7 +24,7 @@ type endpoint string
 
 // ContextType returns the type of API response (JSON or XML)
 // associated with the Context.
-func (e *endpoint) ContextType(ctx context.Context) string {
+func (e endpoint) ContextType(ctx context.Context) string {
 	suffix := Json
 	if ctx != nil {
 		if t, ok := ctx.Value(ResType).(string); ok && t != "" {
@@ -36,6 +36,6 @@ func (e *endpoint) ContextType(ctx context.Context) string {
 
 // String reads the Context and returns the endpoint suffixed with the type
 // of the request: json or xml.
-func (e *endpoint) String(ctx context.Context) string {
+func (e endpoint) String(ctx context.Context) string {
 	return fmt.Sprintf("%s/%s", *e, e.ContextType(ctx))
 }
