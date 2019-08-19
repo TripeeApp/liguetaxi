@@ -102,19 +102,19 @@ func TestClientRequest(t *testing.T) {
 			dummy{},
 		},
 		{
-			"/foo",
+			"foo",
 			http.MethodGet,
 			nil,
 			newMockServer(func(w http.ResponseWriter, r *http.Request) {
-				if got := r.URL.Path; got != "/foo/json" {
-					t.Errorf("got Request.URL: %s; want foo/.", got)
+				if want := "/api/foo/json"; r.URL.Path != want {
+					t.Errorf("got Request.URL: %s; want %s.", r.URL.Path, want)
 				}
 				w.Write(emptyObj)
 			}),
 			dummy{},
 		},
 		{
-			"/foo",
+			"foo",
 			http.MethodPost,
 			nil,
 			newMockServer(func(w http.ResponseWriter, r *http.Request) {
@@ -126,7 +126,7 @@ func TestClientRequest(t *testing.T) {
 			dummy{},
 		},
 		{
-			"/foo",
+			"foo",
 			http.MethodPost,
 			nil,
 			newMockServer(func(w http.ResponseWriter, r *http.Request) {
@@ -201,28 +201,28 @@ func TestClientRequestError(t *testing.T) {
 			":",
 			http.MethodGet,
 			nil,
-			newMockServer(nil),
+			newMockServer(func(w http.ResponseWriter, r *http.Request) {}),
 			nil,
 		},
 		{
 			"",
 			http.MethodGet,
 			make(chan int),
-			newMockServer(nil),
+			newMockServer(func(w http.ResponseWriter, r *http.Request) {}),
 			nil,
 		},
 		{
 			"",
 			",",
 			nil,
-			newMockServer(nil),
+			newMockServer(func(w http.ResponseWriter, r *http.Request) {}),
 			nil,
 		},
 		{
 			"",
 			http.MethodPost,
 			nil,
-			httptest.NewUnstartedServer(nil),
+			httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {})),
 			nil,
 		},
 		{
