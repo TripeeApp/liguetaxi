@@ -8,19 +8,22 @@ import (
 	"testing"
 )
 
-func TestUserStatusUnmarshalJSON(t *testing.T) {
+func TestUserStatusUnmarshalTest(t *testing.T) {
 	testCases := []struct{
 		b	[]byte
 		want	userStatus
 	}{
-		{[]byte(`24`), UserStatusActive},
-		{[]byte(`25`), UserStatusInactive},
+		{[]byte("24"), UserStatusActive},
+		{[]byte("25"), UserStatusInactive},
+		{[]byte("46"), UserStatusSynching},
 	}
 
 	for _, tc := range testCases {
 		var status userStatus
 
-		status.UnmarshalJSON(tc.b)
+		if err := status.UnmarshalText(tc.b); err != nil {
+			t.Fatalf("got error calling userStatus.UnmarshalJSON(%+v): %s; want nil.", tc.b, err.Error())
+		}
 
 		if status != tc.want {
 			t.Errorf("got userStatus.UnmarshalJSON(%s): %v; want %v.", tc.b, status, tc.want)
@@ -33,7 +36,7 @@ func TestEmptyObjToStrUnmarshalJSON(t *testing.T) {
 		b	[]byte
 		want	string
 	}{
-		{[]byte(`non-empty string`), "non-empty string"},
+		{[]byte(`"non-empty string"`), "non-empty string"},
 		{[]byte(`{}`), ""},
 	}
 
@@ -53,7 +56,7 @@ type testRequester struct{
 	ctx	context.Context
 	err	error
 	method	string
-	output	interface{}
+	output	reflect.Value
 	path	endpoint
 
 }
@@ -64,9 +67,11 @@ func (t *testRequester) Request(ctx context.Context, method string, path endpoin
 	t.path = path
 	t.body = body
 
-	out := reflect.ValueOf(output)
-	if !out.IsNil() && out.Elem().CanSet() && t.output != nil {
-		out.Elem().Set(reflect.ValueOf(t.output))
+	if t.output.IsValid() {
+		out := reflect.ValueOf(output)
+		if !out.IsNil() && out.Elem().CanSet() {
+			out.Elem().Set(t.output)
+		}
 	}
 
 	return t.err
@@ -92,8 +97,11 @@ func TestUser(t *testing.T) {
 			http.MethodPost,
 			readUserEndpoint,
 			userFilter{ "123", "test"},
-			UserResponse{
+			&UserResponse{
 				status: status{ReqStatusOK},
+				Data: DataUser{
+					Status: UserStatusActive.New(),
+				},
 			},
 		},
 		{
@@ -106,7 +114,7 @@ func TestUser(t *testing.T) {
 			http.MethodPost,
 			createUserEndpoint,
 			&User{Name: "Test"},
-			OperationResponse{
+			&OperationResponse{
 				status: status{ReqStatusOK},
 			},
 		},
@@ -120,21 +128,21 @@ func TestUser(t *testing.T) {
 			http.MethodPost,
 			updateUserEndpoint,
 			&User{Name: "Test"},
-			OperationResponse{
+			&OperationResponse{
 				status: status{ReqStatusOK},
 			},
 		},
 		{
 			"UpdateStatus()",
 			func(ctx context.Context, req requester) (resp interface{}, err error) {
-				resp, err = (&UserService{req}).UpdateStatus(ctx, &UserStatus{Name: "Test"})
+				resp, err = (&UserService{req}).UpdateStatus(ctx, &UserStatus{Name: "Test", Status: UserStatusInactive})
 				return
 			},
 			context.Background(),
 			http.MethodPost,
 			updateUserStatusEndpoint,
-			&UserStatus{Name: "Test"},
-			OperationResponse{
+			&UserStatus{Name: "Test", Status: UserStatusInactive},
+			&OperationResponse{
 				status: status{ReqStatusOK},
 			},
 		},
@@ -148,7 +156,7 @@ func TestUser(t *testing.T) {
 			http.MethodPost,
 			readClassifierEndpoint,
 			classifierFilter{Field: "1", Value: "test"},
-			ClassifierResponse{
+			&ClassifierResponse{
 				status: status{ReqStatusOK},
 			},
 		},
@@ -162,7 +170,7 @@ func TestUser(t *testing.T) {
 			http.MethodPost,
 			createClassifierEndpoint,
 			&Classifier{Field: "test", Value: "test2"},
-			ClassifierOperationResponse{
+			&ClassifierOperationResponse{
 				OperationResponse: OperationResponse{
 					status: status{ReqStatusOK},
 				},
@@ -173,7 +181,7 @@ func TestUser(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc // creates scoped test case
 		t.Run(tc.name, func(t *testing.T) {
-			req := &testRequester{output: tc.wantRes}
+			req := &testRequester{output: reflect.ValueOf(tc.wantRes).Elem()}
 
 			res, err := tc.call(tc.ctx, req)
 			if err != nil {

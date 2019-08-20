@@ -78,8 +78,6 @@ type dummy struct {
 }
 
 func TestClientRequest(t *testing.T) {
-
-
 	emptyObj := []byte(`{}`)
 
 	testCases := []struct{

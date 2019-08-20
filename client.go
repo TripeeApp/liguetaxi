@@ -31,7 +31,7 @@ type status struct {
 }
 
 // ApiError implements the error interface
-// and prints infos from the request
+// and returns infos from the request
 type ApiError struct {
 	statusCode int
 	body       []byte

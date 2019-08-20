@@ -2,6 +2,7 @@ package liguetaxi
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 )
 
@@ -10,13 +11,23 @@ import (
 // Inactive - 0
 type userStatus int
 
-// UnmarshalJSON implements the Unmarshaler interface for
+// UnmarshalText implements the TestUnmarshaler interface for
 // userStatus type
-func (us *userStatus) UnmarshalJSON(b []byte) error {
-	if b := string(b); b == `24` {
+func (us *userStatus) UnmarshalText(t []byte) error {
+	switch string(t) {
+	case `24`:
 		*us = UserStatusActive
+	case `46`:
+		*us = UserStatusSynching
+	default:
+		*us = UserStatusInactive
 	}
 	return nil
+}
+
+// New return a pointer to userStatus.
+func (us userStatus) New() *userStatus {
+	return &us
 }
 
 // emptObjToStr is the field that should return an string
@@ -26,16 +37,27 @@ type emptyObjToStr string
 // UnmarshalJSON implements the Unmarshaler interface for
 // emptyObjToStr type
 func (e *emptyObjToStr) UnmarshalJSON(b []byte) error {
+	var s string
 	if token := string(b); token != `{}` {
-		*e = emptyObjToStr(b)
+		if err := json.Unmarshal(b, &s); err != nil {
+			return err
+		}
+		*e = emptyObjToStr(s)
 	}
 	return nil
+}
+
+// String returns underlying string for
+// emptyObjToStr type.
+func (e emptyObjToStr) String() string {
+	return string(e)
 }
 
 // User statuses
 const (
 	UserStatusInactive userStatus = iota
 	UserStatusActive
+	UserStatusSynching
 )
 
 var (
@@ -74,19 +96,22 @@ type ClassifierOperationResponse struct {
 	Data string `json:"data"`
 }
 
+// DataUser is the result from check user request.
+type DataUser struct {
+	ID			string		`json:"authorized_id"`
+	Name			string		`json:"client_name"`
+	Email			*emptyObjToStr	`json:"client_email"`
+	Phone			*emptyObjToStr	`json:"client_phone"`
+	Status			*userStatus	`json:"cod_status"`
+	StatusDescription	string		`json:"status_description"`
+}
+
 // UserResponse is the response returned by the API
 // when listing a user info.
 type UserResponse struct {
 	status
 
-	Data struct {
-		ID			string		`json:"authorized_id"`
-		Name			string		`json:"client_name"`
-		Email			string		`json:"client_email"`
-		Phone			string		`json:"client_phone"`
-		Status			userStatus	`json:"cod_status"`
-		StatusDescription	string		`json:"status_description"`
-	} `json:"data"`
+	Data DataUser  `json:"data"`
 }
 
 // Pulled off for testing
@@ -127,9 +152,9 @@ type User struct {
 // UserStatus is the user status infos.
 type UserStatus struct {
 	ID	string		`json:"authorized_id"`
-	Name	string		`json:"user_name"`
+	Name	string		`json:"user_name,omitempty"`
 	Status	userStatus	`json:"status"`
-	Reason	string		`json:"reason"`
+	Reason	string		`json:"reason,omitempty"`
 }
 
 type classifierFilter struct {
@@ -159,21 +184,21 @@ type UserService struct {
 }
 
 // Read returns User infos or an error.
-func (us *UserService) Read(ctx context.Context, id, name string) (UserResponse, error) {
-	var u UserResponse
+func (us *UserService) Read(ctx context.Context, id, name string) (*UserResponse, error) {
+	u := &UserResponse{}
 
-	if err := us.client.Request(ctx, http.MethodPost, readUserEndpoint, userFilter{id, name}, &u); err != nil {
-		return u, err
+	if err := us.client.Request(ctx, http.MethodPost, readUserEndpoint, userFilter{id, name}, u); err != nil {
+		return nil, err
 	}
 
 	return u, nil
 }
 
 // Create returns the status operation for creating a user or an error.
-func (us *UserService) Create(ctx context.Context, u *User) (OperationResponse, error) {
-	var op OperationResponse
+func (us *UserService) Create(ctx context.Context, u *User) (*OperationResponse, error) {
+	op := &OperationResponse{}
 
-	if err := us.client.Request(ctx, http.MethodPost, createUserEndpoint, u, &op); err != nil {
+	if err := us.client.Request(ctx, http.MethodPost, createUserEndpoint, u, op); err != nil {
 		return op, err
 	}
 
@@ -181,10 +206,10 @@ func (us *UserService) Create(ctx context.Context, u *User) (OperationResponse, 
 }
 
 // Update returns the status operation for updating user or an error.
-func (us *UserService) Update(ctx context.Context, u *User) (OperationResponse, error) {
-	var op OperationResponse
+func (us *UserService) Update(ctx context.Context, u *User) (*OperationResponse, error) {
+	op := &OperationResponse{}
 
-	if err := us.client.Request(ctx, http.MethodPost, updateUserEndpoint, u, &op); err != nil {
+	if err := us.client.Request(ctx, http.MethodPost, updateUserEndpoint, u, op); err != nil {
 		return op, err
 	}
 
@@ -192,19 +217,19 @@ func (us *UserService) Update(ctx context.Context, u *User) (OperationResponse, 
 }
 
 // UpdateStatus returns the status operation for updating the user status or an error.
-func (us *UserService) UpdateStatus(ctx context.Context, s *UserStatus) (OperationResponse, error) {
-	var op OperationResponse
+func (us *UserService) UpdateStatus(ctx context.Context, s *UserStatus) (*OperationResponse, error) {
+	op := &OperationResponse{}
 
-	us.client.Request(ctx, http.MethodPost, updateUserStatusEndpoint, s, &op)
+	us.client.Request(ctx, http.MethodPost, updateUserStatusEndpoint, s, op)
 
 	return op, nil
 }
 
 // ReadClassifier returns the classifier field info.
-func (us *UserService) ReadClassifier(ctx context.Context, field, value string) (ClassifierResponse, error) {
-	var c ClassifierResponse
+func (us *UserService) ReadClassifier(ctx context.Context, field, value string) (*ClassifierResponse, error) {
+	c := &ClassifierResponse{}
 
-	if err := us.client.Request(ctx, http.MethodPost, readClassifierEndpoint, classifierFilter{field, value}, &c); err != nil {
+	if err := us.client.Request(ctx, http.MethodPost, readClassifierEndpoint, classifierFilter{field, value}, c); err != nil {
 		return c, err
 	}
 
@@ -212,10 +237,10 @@ func (us *UserService) ReadClassifier(ctx context.Context, field, value string) 
 }
 
 // CreateClassifier returns the status operation for creating classifier field or an error.
-func (us *UserService) CreateClassifier(ctx context.Context, c *Classifier) (ClassifierOperationResponse, error) {
-	var co ClassifierOperationResponse
+func (us *UserService) CreateClassifier(ctx context.Context, c *Classifier) (*ClassifierOperationResponse, error) {
+	co := &ClassifierOperationResponse{}
 
-	if err := us.client.Request(ctx, http.MethodPost, createClassifierEndpoint, c, &co); err != nil {
+	if err := us.client.Request(ctx, http.MethodPost, createClassifierEndpoint, c, co); err != nil {
 		return co, err
 	}
 

@@ -101,3 +101,16 @@ func randString(max int, rangeBytes string) string {
 
 	return *(*string)(unsafe.Pointer(&b))
 }
+
+func checkOperation(delay time.Duration, retries int, check func() error ) (success bool, err error) {
+	for i := 0; i < retries; i++ {
+		<-time.Tick(delay)
+
+		err = check()
+		if success := err == nil; success {
+			return success, err
+		}
+	}
+
+	return success, err
+}
