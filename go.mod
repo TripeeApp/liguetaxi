@@ -1,3 +1,3 @@
-module bitbucket.org/mobilitee/liguetaxi
+module github.com/rdleal/liguetaxi
 
 go 1.12
