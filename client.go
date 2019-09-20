@@ -62,7 +62,7 @@ type Client struct {
 }
 
 // New returns a Client for requests Ligue Taxi API.
-func New(host *url.URL, token string, c *http.Client) *Client {
+func NewClient(host *url.URL, token string, c *http.Client) *Client {
 	if c == nil {
 		c = &http.Client{}
 	}

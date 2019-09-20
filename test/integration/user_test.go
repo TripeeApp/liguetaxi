@@ -7,14 +7,13 @@ import (
 	"testing"
 	"time"
 
-	"bitbucket.org/mobilitee/liguetaxi"
+	"github.com/mobilitee-smartmob/liguetaxi"
 )
 
 var (
-	userID		= flag.String("id", fmt.Sprintf("00%s", randString(9, numberBytes)), "Define user ID to be created or searched")
-	retries		= 8
-	delay		= 5 * time.Second
-
+	userID  = flag.String("id", fmt.Sprintf("00%s", randString(9, numberBytes)), "Define user ID to be created or searched")
+	retries = 8
+	delay   = 5 * time.Second
 )
 
 // Setup general user data
@@ -84,10 +83,10 @@ func TestMain(t *testing.T) {
 	}
 
 	newUser := &liguetaxi.User{
-		Name: randString(10, letterBytes),
-		Email: fmt.Sprintf("%s@gmail.com", randString(5, letterBytes)),
-		Phone: "11986548744",
-		Password: "test1234",
+		Name:        randString(10, letterBytes),
+		Email:       fmt.Sprintf("%s@gmail.com", randString(5, letterBytes)),
+		Phone:       "11986548744",
+		Password:    "test1234",
 		Classifier1: costCenter,
 		Classifier2: *userID,
 		Classifier3: "0003",
@@ -153,7 +152,7 @@ func TestUserUpdateStatus(t *testing.T) {
 	}
 
 	newUserStatus := &liguetaxi.UserStatus{
-		ID: u.Data.ID,
+		ID:     u.Data.ID,
 		Status: liguetaxi.UserStatusInactive,
 	}
 
@@ -171,7 +170,7 @@ func TestUserUpdateStatus(t *testing.T) {
 		t.Fatalf("got error calling User.Read(%s): %s; want nil.", *userID, err.Error())
 	}
 
-	if want := liguetaxi.UserStatusInactive; user.Data.ID != ""  && *user.Data.Status != want {
+	if want := liguetaxi.UserStatusInactive; user.Data.ID != "" && *user.Data.Status != want {
 		t.Errorf("got user.Status: %d; want %d.", *user.Data.Status, want)
 	}
 }
@@ -179,7 +178,7 @@ func TestUserUpdateStatus(t *testing.T) {
 func TestUserUpdate(t *testing.T) {
 	newEmail := fmt.Sprintf("%s@gmail.com", randString(5, letterBytes))
 	newUserInfo := &liguetaxi.User{
-		ID: *userID,
+		ID:    *userID,
 		Email: newEmail,
 	}
 

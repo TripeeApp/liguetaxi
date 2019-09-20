@@ -1,3 +1,3 @@
-module github.com/rdleal/liguetaxi
+module github.com/mobilitee-smartmob/liguetaxi
 
-go 1.12
+go 1.13

@@ -1,8 +1,8 @@
 package liguetaxi
 
 import (
-	"context"
 	"bytes"
+	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -17,8 +17,8 @@ import (
 func TestApiError(t *testing.T) {
 	var (
 		status = http.StatusBadRequest
-		body = []byte("Invalid Request")
-		msg = http.StatusText(http.StatusBadRequest)
+		body   = []byte("Invalid Request")
+		msg    = http.StatusText(http.StatusBadRequest)
 	)
 
 	e := &ApiError{status, body, msg}
@@ -28,11 +28,11 @@ func TestApiError(t *testing.T) {
 	}
 }
 
-func TestNew(t *testing.T) {
-	testCases := []struct{
-		host	*url.URL
-		token	string
-		client	*http.Client
+func TestNewClient(t *testing.T) {
+	testCases := []struct {
+		host   *url.URL
+		token  string
+		client *http.Client
 	}{
 		{&url.URL{}, "abc", nil},
 		{&url.URL{}, "abc", &http.Client{}},
@@ -44,7 +44,7 @@ func TestNew(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		c := New(tc.host, tc.token, tc.client)
+		c := NewClient(tc.host, tc.token, tc.client)
 
 		if c.host != tc.host {
 			t.Errorf("got c.host : %s; want %s.", c.host, tc.host)
@@ -62,7 +62,7 @@ func TestNew(t *testing.T) {
 }
 
 func TestNewClientServices(t *testing.T) {
-	c := New(&url.URL{}, "", nil)
+	c := NewClient(&url.URL{}, "", nil)
 
 	if c.User == nil {
 		t.Errorf("got Client.User nil; want not nil.")
@@ -80,12 +80,12 @@ type dummy struct {
 func TestClientRequest(t *testing.T) {
 	emptyObj := []byte(`{}`)
 
-	testCases := []struct{
+	testCases := []struct {
 		endpoint endpoint
-		method	 string
-		body	 interface{}
-		server	 *httptest.Server
-		wantOut	 interface{}
+		method   string
+		body     interface{}
+		server   *httptest.Server
+		wantOut  interface{}
 	}{
 		{
 			"",
@@ -171,7 +171,7 @@ func TestClientRequest(t *testing.T) {
 		var output dummy
 
 		u, _ := url.Parse(tc.server.URL)
-		c := New(u, "abc", nil)
+		c := NewClient(u, "abc", nil)
 
 		err := c.Request(context.Background(), tc.method, tc.endpoint, tc.body, &output)
 		if err != nil {
@@ -188,12 +188,12 @@ func TestClientRequest(t *testing.T) {
 }
 
 func TestClientRequestError(t *testing.T) {
-	testCases := []struct{
-		path		endpoint
-		method		string
-		body		interface{}
-		server		*httptest.Server
-		assertError	func(e error)
+	testCases := []struct {
+		path        endpoint
+		method      string
+		body        interface{}
+		server      *httptest.Server
+		assertError func(e error)
 	}{
 		{
 			":",
@@ -256,7 +256,7 @@ func TestClientRequestError(t *testing.T) {
 
 	for _, tc := range testCases {
 		u, _ := url.Parse(tc.server.URL)
-		c := New(u, "abc", nil)
+		c := NewClient(u, "abc", nil)
 
 		err := c.Request(context.Background(), tc.method, tc.path, tc.body, &dummy{})
 		if err == nil {
@@ -288,7 +288,7 @@ func TestClientRequestWithContext(t *testing.T) {
 	cancel()
 
 	u, _ := url.Parse(s.URL)
-	c := New(u, "abc", nil)
+	c := NewClient(u, "abc", nil)
 
 	if err := c.Request(ctx, http.MethodGet, endpoint("/"), nil, nil); err == nil {
 		t.Errorf("got error nil; want not nil")

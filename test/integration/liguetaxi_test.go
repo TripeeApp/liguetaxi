@@ -3,16 +3,16 @@ package integration
 import (
 	"bytes"
 	"flag"
+	"io/ioutil"
 	"log"
 	"math/rand"
-	"net/url"
 	"net/http"
-	"io/ioutil"
+	"net/url"
 	"os"
 	"time"
 	"unsafe"
 
-	"bitbucket.org/mobilitee/liguetaxi"
+	"github.com/mobilitee-smartmob/liguetaxi"
 )
 
 // Transport used to log the requests.
@@ -41,8 +41,8 @@ func (t *transportLogger) RoundTrip(r *http.Request) (*http.Response, error) {
 }
 
 const (
-	envKeyLiguetaxiToken  = "LIGUETAXI_TOKEN"
-	envKeyLiguetaxiHost = "LIGUETAXI_HOST"
+	envKeyLiguetaxiToken = "LIGUETAXI_TOKEN"
+	envKeyLiguetaxiHost  = "LIGUETAXI_HOST"
 )
 
 const (
@@ -53,7 +53,7 @@ const (
 const (
 	letterIdxBits = 6
 	letterIdxMask = 1<<letterIdxBits - 1
-	letterIdxMax = 63 / letterIdxBits
+	letterIdxMax  = 63 / letterIdxBits
 )
 
 // Ligue Taxi Client
@@ -81,7 +81,7 @@ func init() {
 		}
 	}
 
-	ligtaxi = liguetaxi.New(host, token, hc)
+	ligtaxi = liguetaxi.NewClient(host, token, hc)
 }
 
 func randString(max int, rangeBytes string) string {
@@ -102,7 +102,7 @@ func randString(max int, rangeBytes string) string {
 	return *(*string)(unsafe.Pointer(&b))
 }
 
-func checkOperation(delay time.Duration, retries int, check func() error ) (success bool, err error) {
+func checkOperation(delay time.Duration, retries int, check func() error) (success bool, err error) {
 	for i := 0; i < retries; i++ {
 		<-time.Tick(delay)
 
