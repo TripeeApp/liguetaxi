@@ -11,7 +11,7 @@ import (
 // Inactive - 0
 type userStatus int
 
-// UnmarshalText implements the TestUnmarshaler interface for
+// UnmarshalText implements the TextUnmarshaler interface for
 // userStatus type
 func (us *userStatus) UnmarshalText(t []byte) error {
 	switch string(t) {
@@ -23,6 +23,24 @@ func (us *userStatus) UnmarshalText(t []byte) error {
 		*us = UserStatusInactive
 	}
 	return nil
+}
+
+// MarshalJSON implements the Marshaler interface for
+// userStatus type
+func (us *userStatus) MarshalJSON() ([]byte, error) {
+	if us == nil {
+		return []byte(`null`), nil
+	}
+
+	switch *us {
+	case UserStatusActive:
+		return []byte(`24`), nil
+	case UserStatusSynching:
+		return []byte(`46`), nil
+	default:
+		return []byte(`25`), nil
+	}
+	return nil, nil
 }
 
 // New return a pointer to userStatus.
@@ -98,12 +116,12 @@ type ClassifierOperationResponse struct {
 
 // DataUser is the result from check user request.
 type DataUser struct {
-	ID			string		`json:"authorized_id"`
-	Name			string		`json:"client_name"`
-	Email			*emptyObjToStr	`json:"client_email"`
-	Phone			*emptyObjToStr	`json:"client_phone"`
-	Status			*userStatus	`json:"cod_status"`
-	StatusDescription	string		`json:"status_description"`
+	ID                string         `json:"authorized_id"`
+	Name              string         `json:"client_name"`
+	Email             *emptyObjToStr `json:"client_email"`
+	Phone             *emptyObjToStr `json:"client_phone"`
+	Status            *userStatus    `json:"cod_status"`
+	StatusDescription string         `json:"status_description"`
 }
 
 // UserResponse is the response returned by the API
@@ -111,50 +129,50 @@ type DataUser struct {
 type UserResponse struct {
 	status
 
-	Data DataUser  `json:"data"`
+	Data DataUser `json:"data"`
 }
 
 // Pulled off for testing
-type userFilter struct{
-	ID	string `json:"unique_field"`
-	Name	string `json:"user_name,omitempty"`
+type userFilter struct {
+	ID   string `json:"unique_field"`
+	Name string `json:"user_name,omitempty"`
 }
 
 // User is sent to server when creating or editing user.
 type User struct {
-	ID		string `json:"unique_field,omitempty"`
-	Name		string `json:"user_name"`
-	Email		string `json:"user_email"`
-	Phone		string `json:"user_phone,omitempty"`
-	Password	string `json:"user_password,omitempty"`
-	Classifier1	string `json:"classificador1,omitempty"`
-	Classifier2	string `json:"classificador2,omitempty"`
-	Classifier3	string `json:"classificador3,omitempty"`
-	Classifier4	string `json:"classificador4,omitempty"`
-	Classifier5	string `json:"classificador5,omitempty"`
-	Classifier6	string `json:"classificador6,omitempty"`
-	Classifier7	string `json:"classificador7,omitempty"`
-	Classifier8	string `json:"classificador8,omitempty"`
-	Classifier9	string `json:"classificador9,omitempty"`
-	Classifier10	string `json:"classificador10,omitempty"`
-	Classifier11	string `json:"classificador11,omitempty"`
-	Classifier12	string `json:"classificador12,omitempty"`
-	Classifier13	string `json:"classificador13,omitempty"`
-	Classifier14	string `json:"classificador14,omitempty"`
-	Classifier15	string `json:"classificador15,omitempty"`
-	Classifier16	string `json:"classificador16,omitempty"`
-	Classifier17	string `json:"classificador17,omitempty"`
-	Classifier18	string `json:"classificador18,omitempty"`
-	Classifier19	string `json:"classificador19,omitempty"`
-	Classifier20	string `json:"classificador20,omitempty"`
+	ID           string `json:"unique_field,omitempty"`
+	Name         string `json:"user_name"`
+	Email        string `json:"user_email"`
+	Phone        string `json:"user_phone,omitempty"`
+	Password     string `json:"user_password,omitempty"`
+	Classifier1  string `json:"classificador1,omitempty"`
+	Classifier2  string `json:"classificador2,omitempty"`
+	Classifier3  string `json:"classificador3,omitempty"`
+	Classifier4  string `json:"classificador4,omitempty"`
+	Classifier5  string `json:"classificador5,omitempty"`
+	Classifier6  string `json:"classificador6,omitempty"`
+	Classifier7  string `json:"classificador7,omitempty"`
+	Classifier8  string `json:"classificador8,omitempty"`
+	Classifier9  string `json:"classificador9,omitempty"`
+	Classifier10 string `json:"classificador10,omitempty"`
+	Classifier11 string `json:"classificador11,omitempty"`
+	Classifier12 string `json:"classificador12,omitempty"`
+	Classifier13 string `json:"classificador13,omitempty"`
+	Classifier14 string `json:"classificador14,omitempty"`
+	Classifier15 string `json:"classificador15,omitempty"`
+	Classifier16 string `json:"classificador16,omitempty"`
+	Classifier17 string `json:"classificador17,omitempty"`
+	Classifier18 string `json:"classificador18,omitempty"`
+	Classifier19 string `json:"classificador19,omitempty"`
+	Classifier20 string `json:"classificador20,omitempty"`
 }
 
 // UserStatus is the user status infos.
 type UserStatus struct {
-	ID	string		`json:"authorized_id"`
-	Name	string		`json:"user_name,omitempty"`
-	Status	userStatus	`json:"status"`
-	Reason	string		`json:"reason,omitempty"`
+	ID     string     `json:"authorized_id"`
+	Name   string     `json:"user_name,omitempty"`
+	Status userStatus `json:"status"`
+	Reason string     `json:"reason,omitempty"`
 }
 
 type classifierFilter struct {
@@ -164,9 +182,9 @@ type classifierFilter struct {
 
 // Classifier is the classifier field infos.
 type Classifier struct {
-	ID		string `json:"field_id,omitempty"`
-	Field		string `json:"field,omitempty"`
-	Value		string `json:"field_value"`
+	ID              string `json:"field_id,omitempty"`
+	Field           string `json:"field,omitempty"`
+	Value           string `json:"field_value"`
 	AdditionalValue string `json:"field_additional_value,omitempty"`
 }
 
@@ -179,9 +197,7 @@ type ClassifierResponse struct {
 }
 
 // UserService handles the requests related to the user.
-type UserService struct {
-	client requester
-}
+type UserService service
 
 // Read returns User infos or an error.
 func (us *UserService) Read(ctx context.Context, id, name string) (*UserResponse, error) {

@@ -1,6 +1,7 @@
 package liguetaxi
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"net/http"
@@ -8,10 +9,10 @@ import (
 	"testing"
 )
 
-func TestUserStatusUnmarshalTest(t *testing.T) {
-	testCases := []struct{
-		b	[]byte
-		want	userStatus
+func TestUserStatusUnmarshal(t *testing.T) {
+	testCases := []struct {
+		b    []byte
+		want userStatus
 	}{
 		{[]byte("24"), UserStatusActive},
 		{[]byte("25"), UserStatusInactive},
@@ -31,10 +32,33 @@ func TestUserStatusUnmarshalTest(t *testing.T) {
 	}
 }
 
+func TestUserStatusMarshalJSON(t *testing.T) {
+	testCases := []struct {
+		status *userStatus
+		want   []byte
+	}{
+		{UserStatusActive.New(), []byte("24")},
+		{UserStatusInactive.New(), []byte("25")},
+		{UserStatusSynching.New(), []byte("46")},
+		{nil, []byte(`null`)},
+	}
+
+	for _, tc := range testCases {
+		got, err := tc.status.MarshalJSON()
+		if err != nil {
+			t.Fatalf("got error calling userStatus.MarshalJSON(): %s; want nil.", err.Error())
+		}
+
+		if !bytes.Equal(got, tc.want) {
+			t.Errorf("got userStatus.MarshalJSON(): %s; want %s.", got, tc.want)
+		}
+	}
+}
+
 func TestEmptyObjToStrUnmarshalJSON(t *testing.T) {
-	testCases := []struct{
-		b	[]byte
-		want	string
+	testCases := []struct {
+		b    []byte
+		want string
 	}{
 		{[]byte(`"non-empty string"`), "non-empty string"},
 		{[]byte(`{}`), ""},
@@ -51,14 +75,13 @@ func TestEmptyObjToStrUnmarshalJSON(t *testing.T) {
 	}
 }
 
-type testRequester struct{
-	body	interface{}
-	ctx	context.Context
-	err	error
-	method	string
-	output	reflect.Value
-	path	endpoint
-
+type testRequester struct {
+	body   interface{}
+	ctx    context.Context
+	err    error
+	method string
+	output reflect.Value
+	path   endpoint
 }
 
 func (t *testRequester) Request(ctx context.Context, method string, path endpoint, body, output interface{}) error {
@@ -78,14 +101,14 @@ func (t *testRequester) Request(ctx context.Context, method string, path endpoin
 }
 
 func TestUser(t *testing.T) {
-	testCases := []struct{
-		name	string
-		call	func(ctx context.Context, req requester) (resp interface{}, err error)
-		ctx	context.Context
-		method	string
-		path	endpoint
-		body	interface{}
-		wantRes	interface{}
+	testCases := []struct {
+		name    string
+		call    func(ctx context.Context, req requester) (resp interface{}, err error)
+		ctx     context.Context
+		method  string
+		path    endpoint
+		body    interface{}
+		wantRes interface{}
 	}{
 		{
 			"Read()",
@@ -96,7 +119,7 @@ func TestUser(t *testing.T) {
 			context.Background(),
 			http.MethodPost,
 			readUserEndpoint,
-			userFilter{ "123", "test"},
+			userFilter{"123", "test"},
 			&UserResponse{
 				status: status{ReqStatusOK},
 				Data: DataUser{
@@ -212,10 +235,10 @@ func TestUser(t *testing.T) {
 }
 
 func TestUserError(t *testing.T) {
-	testCases := []struct{
-		name	string
-		call	func(req requester) error
-		err	error
+	testCases := []struct {
+		name string
+		call func(req requester) error
+		err  error
 	}{
 		{
 			"Read()",
