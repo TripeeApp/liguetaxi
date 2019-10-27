@@ -14,9 +14,9 @@ func TestUserStatusUnmarshal(t *testing.T) {
 		b    []byte
 		want userStatus
 	}{
-		{[]byte("24"), UserStatusActive},
-		{[]byte("25"), UserStatusInactive},
-		{[]byte("46"), UserStatusSynching},
+		{[]byte(`"24"`), UserStatusActive},
+		{[]byte(`"25"`), UserStatusInactive},
+		{[]byte(`"46"`), UserStatusSynching},
 	}
 
 	for _, tc := range testCases {
@@ -37,9 +37,9 @@ func TestUserStatusMarshalJSON(t *testing.T) {
 		status *userStatus
 		want   []byte
 	}{
-		{UserStatusActive.New(), []byte("24")},
-		{UserStatusInactive.New(), []byte("25")},
-		{UserStatusSynching.New(), []byte("46")},
+		{UserStatusActive.New(), []byte(`"24"`)},
+		{UserStatusInactive.New(), []byte(`"25"`)},
+		{UserStatusSynching.New(), []byte(`"46"`)},
 		{nil, []byte(`null`)},
 	}
 

@@ -15,9 +15,9 @@ type userStatus int
 // userStatus type
 func (us *userStatus) UnmarshalText(t []byte) error {
 	switch string(t) {
-	case `24`:
+	case `"24"`:
 		*us = UserStatusActive
-	case `46`:
+	case `"46"`:
 		*us = UserStatusSynching
 	default:
 		*us = UserStatusInactive
@@ -34,11 +34,11 @@ func (us *userStatus) MarshalJSON() ([]byte, error) {
 
 	switch *us {
 	case UserStatusActive:
-		return []byte(`24`), nil
+		return []byte(`"24"`), nil
 	case UserStatusSynching:
-		return []byte(`46`), nil
+		return []byte(`"46"`), nil
 	default:
-		return []byte(`25`), nil
+		return []byte(`"25"`), nil
 	}
 	return nil, nil
 }
