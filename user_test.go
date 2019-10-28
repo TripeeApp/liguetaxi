@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-func TestUserStatusUnmarshal(t *testing.T) {
+func TestUserStatusUnmarshalJSON(t *testing.T) {
 	testCases := []struct {
 		b    []byte
 		want userStatus
@@ -23,7 +23,7 @@ func TestUserStatusUnmarshal(t *testing.T) {
 	for _, tc := range testCases {
 		var status userStatus
 
-		if err := status.UnmarshalText(tc.b); err != nil {
+		if err := status.UnmarshalJSON(tc.b); err != nil {
 			t.Fatalf("got error calling userStatus.UnmarshalJSON(%+v): %s; want nil.", tc.b, err.Error())
 		}
 
