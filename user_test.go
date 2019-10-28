@@ -121,7 +121,7 @@ func TestUser(t *testing.T) {
 			readUserEndpoint,
 			userFilter{"123", "test"},
 			&UserResponse{
-				status: status{ReqStatusOK},
+				Status: ReqStatusOK,
 				Data: DataUser{
 					Status: UserStatusActive.New(),
 				},
@@ -138,7 +138,7 @@ func TestUser(t *testing.T) {
 			createUserEndpoint,
 			&User{Name: "Test"},
 			&OperationResponse{
-				status: status{ReqStatusOK},
+				Status: ReqStatusOK,
 			},
 		},
 		{
@@ -152,7 +152,7 @@ func TestUser(t *testing.T) {
 			updateUserEndpoint,
 			&User{Name: "Test"},
 			&OperationResponse{
-				status: status{ReqStatusOK},
+				Status: ReqStatusOK,
 			},
 		},
 		{
@@ -166,7 +166,7 @@ func TestUser(t *testing.T) {
 			updateUserStatusEndpoint,
 			&UserStatus{Name: "Test", Status: UserStatusInactive},
 			&OperationResponse{
-				status: status{ReqStatusOK},
+				Status: ReqStatusOK,
 			},
 		},
 		{
@@ -180,7 +180,7 @@ func TestUser(t *testing.T) {
 			readClassifierEndpoint,
 			classifierFilter{Field: "1", Value: "test"},
 			&ClassifierResponse{
-				status: status{ReqStatusOK},
+				Status: ReqStatusOK,
 			},
 		},
 		{
@@ -195,7 +195,7 @@ func TestUser(t *testing.T) {
 			&Classifier{Field: "test", Value: "test2"},
 			&ClassifierOperationResponse{
 				OperationResponse: OperationResponse{
-					status: status{ReqStatusOK},
+					Status: ReqStatusOK,
 				},
 			},
 		},

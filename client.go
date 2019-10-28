@@ -26,7 +26,7 @@ const (
 )
 
 // status is the request status.
-type status struct {
+type Status struct {
 	Status reqStatus `json:"status"`
 }
 

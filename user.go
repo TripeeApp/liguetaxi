@@ -101,7 +101,7 @@ var (
 // OperationResponse is the response returned by the API
 // for non-idempotent operations on user.
 type OperationResponse struct {
-	status
+	Status reqStatus
 
 	Message string `json:"message"`
 }
@@ -127,7 +127,7 @@ type DataUser struct {
 // UserResponse is the response returned by the API
 // when listing a user info.
 type UserResponse struct {
-	status
+	Status reqStatus
 
 	Data DataUser `json:"data"`
 }
@@ -191,7 +191,7 @@ type Classifier struct {
 // ClassifierResponse is the response returned by the API
 // when reading the classifier field info.
 type ClassifierResponse struct {
-	status
+	Status reqStatus
 
 	Data []Classifier `json:"data"`
 }
