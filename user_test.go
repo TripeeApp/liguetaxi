@@ -17,6 +17,7 @@ func TestUserStatusUnmarshal(t *testing.T) {
 		{[]byte(`"24"`), UserStatusActive},
 		{[]byte(`"25"`), UserStatusInactive},
 		{[]byte(`"46"`), UserStatusSynching},
+		{[]byte(`"46"`), UserStatusSynching},
 	}
 
 	for _, tc := range testCases {

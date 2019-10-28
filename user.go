@@ -6,6 +6,33 @@ import (
 	"net/http"
 )
 
+// User statuses
+const (
+	UserStatusInactive userStatus = iota
+	UserStatusActive
+	UserStatusSynching
+)
+
+var (
+	// Endpoint for reading user info.
+	readUserEndpoint endpoint = `user/check_authorized`
+
+	// Endpoint for editing user status.
+	updateUserStatusEndpoint endpoint = `user/status_authorized`
+
+	// Endpoint for editing user info.
+	updateUserEndpoint endpoint = `user/edit_authorized`
+
+	// Endpoint for creating user.
+	createUserEndpoint endpoint = `user/create_authorized`
+
+	// Endpoint for reading classifier field.
+	readClassifierEndpoint endpoint = `user/check_authorized_field`
+
+	// Endpoint for creating classifier field.
+	createClassifierEndpoint endpoint = `user/create_authorized_field`
+)
+
 // userStatus is the user status.
 // Active - 1
 // Inactive - 0
@@ -13,7 +40,7 @@ type userStatus int
 
 // UnmarshalText implements the TextUnmarshaler interface for
 // userStatus type
-func (us *userStatus) UnmarshalText(t []byte) error {
+func (us *userStatus) UnmarshalJSON(t []byte) error {
 	switch string(t) {
 	case `"24"`:
 		*us = UserStatusActive
@@ -70,33 +97,6 @@ func (e *emptyObjToStr) UnmarshalJSON(b []byte) error {
 func (e emptyObjToStr) String() string {
 	return string(e)
 }
-
-// User statuses
-const (
-	UserStatusInactive userStatus = iota
-	UserStatusActive
-	UserStatusSynching
-)
-
-var (
-	// Endpoint for reading user info.
-	readUserEndpoint endpoint = `user/check_authorized`
-
-	// Endpoint for editing user status.
-	updateUserStatusEndpoint endpoint = `user/status_authorized`
-
-	// Endpoint for editing user info.
-	updateUserEndpoint endpoint = `user/edit_authorized`
-
-	// Endpoint for creating user.
-	createUserEndpoint endpoint = `user/create_authorized`
-
-	// Endpoint for reading classifier field.
-	readClassifierEndpoint endpoint = `user/check_authorized_field`
-
-	// Endpoint for creating classifier field.
-	createClassifierEndpoint endpoint = `user/create_authorized_field`
-)
 
 // OperationResponse is the response returned by the API
 // for non-idempotent operations on user.
